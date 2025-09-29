@@ -1,0 +1,24 @@
+{
+  "name": "llama-node-poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "basic": "node index.js basic",
+    "chat": "node index.js chat",
+    "stream": "node index.js stream",
+    "help": "node index.js --help",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^14.0.1",
+    "llama-node": "^0.1.6",
+    "node-llama-cpp": "^3.13.0"
+  }
+}
