@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runBasicExample = runBasicExample;
 exports.showApiExample = showApiExample;
 const chalk_1 = __importDefault(require("chalk"));
-const config_1 = require("../config");
+const config_js_1 = require("../config.js");
 const llamaNode = require("llama-node");
 /**
  * Basic Llama example using llama-node package - TypeScript version
@@ -16,12 +16,12 @@ async function runBasicExample(options = {}) {
         console.log(chalk_1.default.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n"));
         const Llama = llamaNode.LlamaApi;
         console.log(chalk_1.default.green("⚙️ Initializing Llama model..."));
-        const modelPath = config_1.config.model.path;
+        const modelPath = config_js_1.config.model.path;
         const generationConfig = {
-            temperature: options.temperature ?? config_1.config.generation.temperature,
-            maxTokens: options.maxTokens ?? config_1.config.generation.maxTokens,
-            topP: config_1.config.generation.topP,
-            topK: config_1.config.generation.topK,
+            temperature: options.temperature ?? config_js_1.config.generation.temperature,
+            maxTokens: options.maxTokens ?? config_js_1.config.generation.maxTokens,
+            topP: config_js_1.config.generation.topP,
+            topK: config_js_1.config.generation.topK,
         };
         console.log(chalk_1.default.cyan("Configuration:"));
         console.log(chalk_1.default.gray(`  Model Path: ${modelPath}`));
@@ -37,7 +37,7 @@ async function runBasicExample(options = {}) {
         }
         console.log(chalk_1.default.blue("\n🤖 Loading model..."));
         const api = new Llama(modelPath);
-        const prompt = config_1.config.prompts.basic;
+        const prompt = config_js_1.config.prompts.basic;
         console.log(chalk_1.default.blue("\n💭 Prompt:"), chalk_1.default.white(prompt));
         console.log(chalk_1.default.blue("🔄 Generating response...\n"));
         const startTime = Date.now();

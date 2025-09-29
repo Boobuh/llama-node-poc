@@ -1,9 +1,9 @@
-import type { AppConfig } from "./types";
+import type { AppConfig } from "./types/index.js";
 /**
  * Configuration file for Llama Node.js POC - TypeScript version
  */
 export declare const config: AppConfig;
-export declare const modelConfig: import("./types").ModelConfig, generationConfig: import("./types").GenerationConfig;
+export declare const modelConfig: import("./types/index.js").ModelConfig, generationConfig: import("./types/index.js").GenerationConfig;
 export declare function validateConfig(config: AppConfig): boolean;
 export declare function getModelRecommendation(useCase: "development" | "production" | "high-quality"): string;
 export default config;

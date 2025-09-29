@@ -3,7 +3,7 @@ import type { AppConfig } from "./types";
 /**
  * Configuration file for Llama Node.js POC - TypeScript version
  */
-export const config: AppConfig = {
+export const appConfig: AppConfig = {
   model: {
     path: "./models/llama-model.gguf",
     name: "llama-2-7B-chat",
@@ -33,21 +33,21 @@ export const config: AppConfig = {
   },
 };
 
-export const { model: modelConfig, generation: generationConfig } = config;
+export const { model: modelConfig, generation: generationConfig } = appConfig;
 
-export function validateConfig(config: AppConfig): boolean {
+export function validateConfig(checkConfig: AppConfig): boolean {
   const isValid =
-    config.model.path.length > 0 &&
-    config.model.contextLength > 0 &&
-    config.model.batchSize > 0 &&
-    config.model.threads > 0 &&
-    config.generation.temperature >= 0 &&
-    config.generation.temperature <= 2 &&
-    config.generation.maxTokens > 0 &&
-    config.generation.topP >= 0 &&
-    config.generation.topP <= 1 &&
-    config.generation.topK > 0 &&
-    config.generation.repeatPenalty >= 0;
+    checkConfig.model.path.length > 0 &&
+    checkConfig.model.contextLength > 0 &&
+    checkConfig.model.batchSize > 0 &&
+    checkConfig.model.threads > 0 &&
+    checkConfig.generation.temperature >= 0 &&
+    checkConfig.generation.temperature <= 2 &&
+    checkConfig.generation.maxTokens > 0 &&
+    checkConfig.generation.topP >= 0 &&
+    checkConfig.generation.topP <= 1 &&
+    checkConfig.generation.topK > 0 &&
+    checkConfig.generation.repeatPenalty >= 0;
 
   if (!isValid) {
     throw new Error("Invalid configuration detected");
@@ -71,4 +71,5 @@ export function getModelRecommendation(
   }
 }
 
-export default config;
+export default appConfig;
+export { appConfig as config };

@@ -1,18 +1,14 @@
-#!/usr/bin/env node
-
 import { program } from "commander";
 import chalk from "chalk";
 import { config } from "./config";
 
 import { runBasicExample } from "./examples/basic-example";
-import { runChatExample } from "./examples/chat-example";
-import { runStreamingExample } from "./examples/streaming-example";
+// import { runChatExample } from "./examples/chat-example";
+// import { runStreamingExample } from "./examples/streaming-example";
 
-/**
- * Main CLI application entry point for Llama Node.js POC (TypeScript)
- */
 async function main(): Promise<void> {
   console.log(chalk.blue(config.cli.welcomeMessage));
+
   console.log(
     chalk.gray(
       "Built with TypeScript for better type safety and developer experience\n"
@@ -42,6 +38,7 @@ async function main(): Promise<void> {
       await runBasicExample(options);
     });
 
+  /*
   program
     .command("chat")
     .description("Run interactive chat example")
@@ -58,7 +55,7 @@ async function main(): Promise<void> {
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
       console.log(chalk.blue("💬 Starting interactive chat..."));
       await runChatExample(options);
-    });
+       });
 
   program
     .command("stream")
@@ -76,7 +73,8 @@ async function main(): Promise<void> {
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
       console.log(chalk.blue("🌊 Running streaming example..."));
       await runStreamingExample(options);
-    });
+       });
+       */
 
   program
     .command("info")
@@ -94,9 +92,6 @@ async function main(): Promise<void> {
   await program.parseAsync();
 }
 
-/**
- * Display system information and configuration
- */
 function showSystemInfo(): void {
   console.log(chalk.yellow("📋 System Information\n"));
 
@@ -126,9 +121,6 @@ function showSystemInfo(): void {
   console.log("  help   - Show command help");
 }
 
-/**
- * Error handler for uncaught exceptions
- */
 process.on("uncaughtException", (error: Error) => {
   console.error(chalk.red("❌ Uncaught Exception:"), error.message);
   process.exit(1);

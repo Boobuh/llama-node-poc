@@ -4,9 +4,6 @@ import type { LlamaConfig, GenerationResult, LlamaError } from "../types";
 
 const llamaNode = require("llama-node");
 
-/**
- * Basic Llama example using llama-node package - TypeScript version
- */
 export async function runBasicExample(
   options: { temperature?: number; maxTokens?: number } = {}
 ): Promise<void> {
@@ -29,7 +26,7 @@ export async function runBasicExample(
 
     console.log(chalk.cyan("Configuration:"));
     console.log(chalk.gray(`  Model Path: ${modelPath}`));
-    console.log(chalk.gray(`  Temperature: ${generationConfig.temperature}`));
+    console.log(chalk.gray(` Temperature: ${generationConfig.temperature}`));
     console.log(chalk.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
     console.log(chalk.gray(`  Top P: ${generationConfig.topP}`));
     console.log(chalk.gray(`  Top K: ${generationConfig.topK}`));
@@ -73,9 +70,6 @@ export async function runBasicExample(
   }
 }
 
-/**
- * Display setup instructions for downloading models
- */
 function showModelSetupInstructions(modelPath: string): void {
   console.log(chalk.yellow("\n📋 Model Setup Instructions:"));
   console.log(chalk.white("1. Download a Llama model in GGUF format"));
@@ -102,7 +96,7 @@ function showModelSetupInstructions(modelPath: string): void {
   console.log(chalk.gray(`mkdir -p models`));
   console.log(
     chalk.gray(
-      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${modelPath}`
+      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguff -O ${modelPath}`
     )
   );
 
@@ -110,9 +104,6 @@ function showModelSetupInstructions(modelPath: string): void {
   console.log(chalk.gray("npm run basic"));
 }
 
-/**
- * Error handling with TypeScript types
- */
 function handleError(error: LlamaError, context: string): void {
   console.error(chalk.red(`❌ Error in ${context}:`));
 
@@ -140,9 +131,6 @@ function handleError(error: LlamaError, context: string): void {
   console.log(chalk.gray("• Ensure proper model format (GGUF)"));
 }
 
-/**
- * Display API usage example
- */
 export function showApiExample(): void {
   console.log(chalk.yellow("\n💻 TypeScript API Example:"));
   console.log(

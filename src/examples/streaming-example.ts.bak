@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import { config } from "../config";
-import type { LlamaStreamConfig, StreamCallback, LlamaError } from "../types";
+import { config } from "process";
+import { LlamaStreamConfig, StreamCallback, LlamaError } from "../types";
 
 const llamaNode = require("llama-node");
 

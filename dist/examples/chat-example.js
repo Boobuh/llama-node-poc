@@ -40,7 +40,7 @@ exports.ChatUtils = void 0;
 exports.runChatExample = runChatExample;
 const readline = __importStar(require("readline"));
 const chalk_1 = __importDefault(require("chalk"));
-const config_1 = require("../config");
+const config_js_1 = require("../config.js");
 const llamaNode = require("llama-node");
 /**
  * Interactive chat example using llama-node package - TypeScript version
@@ -55,17 +55,17 @@ async function runChatExample(options = {}) {
         console.log(chalk_1.default.cyan("This typed example demonstrates interactive conversation with a Llama model"));
         console.log(chalk_1.default.cyan('Type "exit", "quit", or "q" to exit\n'));
         const generationConfig = {
-            temperature: options.temperature ?? config_1.config.generation.temperature,
-            maxTokens: options.maxTokens ?? config_1.config.generation.maxTokens,
-            topP: config_1.config.generation.topP,
-            topK: config_1.config.generation.topK,
-            repeatPenalty: config_1.config.generation.repeatPenalty,
+            temperature: options.temperature ?? config_js_1.config.generation.temperature,
+            maxTokens: options.maxTokens ?? config_js_1.config.generation.maxTokens,
+            topP: config_js_1.config.generation.topP,
+            topK: config_js_1.config.generation.topK,
+            repeatPenalty: config_js_1.config.generation.repeatPenalty,
         };
         const chatHistory = [];
-        if (config_1.config.prompts.chat.includes("You are")) {
+        if (config_js_1.config.prompts.chat.includes("You are")) {
             chatHistory.push({
                 role: "system",
-                content: config_1.config.prompts.chat,
+                content: config_js_1.config.prompts.chat,
             });
         }
         else {
@@ -77,9 +77,9 @@ async function runChatExample(options = {}) {
         console.log(chalk_1.default.yellow("🔧 Chat Configuration:"));
         console.log(chalk_1.default.gray(`  Temperature: ${generationConfig.temperature}`));
         console.log(chalk_1.default.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
-        console.log(chalk_1.default.gray(`  Context Length: ${config_1.config.model.contextLength}`));
+        console.log(chalk_1.default.gray(`  Context Length: ${config_js_1.config.model.contextLength}`));
         const fs = require("fs");
-        const modelExists = fs.existsSync(config_1.config.model.path);
+        const modelExists = fs.existsSync(config_js_1.config.model.path);
         if (!modelExists) {
             showModelSetupInstructions();
             rl.close();
@@ -87,12 +87,12 @@ async function runChatExample(options = {}) {
         }
         console.log(chalk_1.default.blue("\n🤖 Starting chat session..."));
         const Llama = llamaNode.LlamaApi;
-        const api = new Llama(config_1.config.model.path);
+        const api = new Llama(config_js_1.config.model.path);
         let messageCount = 0;
         const askQuestion = async () => {
             rl.question(chalk_1.default.green("\n👤 You: "), async (input) => {
                 const trimmedInput = input.trim();
-                if (config_1.config.cli.exitCommands.includes(trimmedInput.toLowerCase())) {
+                if (config_js_1.config.cli.exitCommands.includes(trimmedInput.toLowerCase())) {
                     console.log(chalk_1.default.yellow("\n👋 Goodbye! Thanks for chatting!"));
                     rl.close();
                     return;
@@ -150,7 +150,7 @@ function showModelSetupInstructions() {
     console.log(chalk_1.default.cyan("\n🔗 Download models from: "), chalk_1.default.blue("https://huggingface.co/TheBloke"));
     console.log(chalk_1.default.yellow("\n💡 Quick Setup:"));
     console.log(chalk_1.default.gray(`mkdir -p models`));
-    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${config_1.config.model.path}`));
+    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${config_js_1.config.model.path}`));
     console.log(chalk_1.default.gray("\n🚀 Run with TypeScript:"));
     console.log(chalk_1.default.gray("npm run chat"));
 }

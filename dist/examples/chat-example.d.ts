@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../types";
+import type { ChatMessage } from "../types/index.js";
 /**
  * Interactive chat example using llama-node package - TypeScript version
  */

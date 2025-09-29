@@ -1,4 +1,4 @@
-import type { StreamCallback } from "../types";
+import type { StreamCallback } from "../types/index.js";
 /**
  * Streaming response example using llama-node package - TypeScript version
  */

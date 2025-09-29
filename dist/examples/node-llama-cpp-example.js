@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductionUtils = void 0;
 exports.runNodeLlamaCppExample = runNodeLlamaCppExample;
 const chalk_1 = __importDefault(require("chalk"));
-const config_1 = require("../config");
+const config_js_1 = require("../config.js");
 let nodeLlamaCpp;
 try {
     nodeLlamaCpp = require("node-llama-cpp");
@@ -22,12 +22,12 @@ async function runNodeLlamaCppExample() {
         console.log(chalk_1.default.yellow("🚀 Node-Llama-CPP Advanced Example (TypeScript)\n"));
         console.log(chalk_1.default.cyan("This typed example uses the advanced node-llama-cpp package with full type safety"));
         const modelConfig = {
-            path: config_1.config.model.path,
-            name: config_1.config.model.name,
-            contextLength: config_1.config.model.contextLength,
-            batchSize: config_1.config.model.batchSize,
-            threads: config_1.config.model.threads,
-            gpuLayers: config_1.config.model.gpuLayers,
+            path: config_js_1.config.model.path,
+            name: config_js_1.config.model.name,
+            contextLength: config_js_1.config.model.contextLength,
+            batchSize: config_js_1.config.model.batchSize,
+            threads: config_js_1.config.model.threads,
+            gpuLayers: config_js_1.config.model.gpuLayers,
         };
         console.log(chalk_1.default.yellow("🔧 Advanced Configuration:"));
         console.log(chalk_1.default.gray(`  Model: ${modelConfig.name}`));

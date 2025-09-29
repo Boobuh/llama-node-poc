@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StreamingUtils = void 0;
 exports.runStreamingExample = runStreamingExample;
 const chalk_1 = __importDefault(require("chalk"));
-const config_1 = require("../config");
+const config_js_1 = require("../config.js");
 const llamaNode = require("llama-node");
 /**
  * Streaming response example using llama-node package - TypeScript version
@@ -16,11 +16,11 @@ async function runStreamingExample(options = {}) {
         console.log(chalk_1.default.yellow("🌊 Streaming Response Example (TypeScript)\n"));
         console.log(chalk_1.default.cyan("This typed example demonstrates real-time streaming of LLM responses"));
         const streamConfig = {
-            temperature: options.temperature ?? config_1.config.generation.temperature,
-            maxTokens: options.maxTokens ?? config_1.config.generation.maxTokens,
-            topP: config_1.config.generation.topP,
-            topK: config_1.config.generation.topK,
-            repeatPenalty: config_1.config.generation.repeatPenalty,
+            temperature: options.temperature ?? config_js_1.config.generation.temperature,
+            maxTokens: options.maxTokens ?? config_js_1.config.generation.maxTokens,
+            topP: config_js_1.config.generation.topP,
+            topK: config_js_1.config.generation.topK,
+            repeatPenalty: config_js_1.config.generation.repeatPenalty,
             stream: true,
         };
         console.log(chalk_1.default.yellow("🔧 Streaming Configuration:"));
@@ -28,15 +28,15 @@ async function runStreamingExample(options = {}) {
         console.log(chalk_1.default.gray(`  Max Tokens: ${streamConfig.maxTokens}`));
         console.log(chalk_1.default.gray(`  Stream: ${streamConfig.stream}`));
         const fs = require("fs");
-        const modelExists = fs.existsSync(config_1.config.model.path);
+        const modelExists = fs.existsSync(config_js_1.config.model.path);
         if (!modelExists) {
             showModelSetupInstructions();
             return;
         }
         console.log(chalk_1.default.blue("\n🤖 Initializing streaming mode..."));
         const Llama = llamaNode.LlamaApi;
-        const api = new Llama(config_1.config.model.path);
-        const prompt = config_1.config.prompts.stream;
+        const api = new Llama(config_js_1.config.model.path);
+        const prompt = config_js_1.config.prompts.stream;
         const streamCallback = (token) => {
             process.stdout.write(chalk_1.default.green(token));
         };
@@ -156,7 +156,7 @@ function showModelSetupInstructions() {
     console.log(chalk_1.default.cyan("\n🔗 Download models from: "), chalk_1.default.blue("https://huggingface.co/TheBloke"));
     console.log(chalk_1.default.yellow("\n💡 Quick Setup:"));
     console.log(chalk_1.default.gray(`mkdir -p models`));
-    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${config_1.config.model.path}`));
+    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${config_js_1.config.model.path}`));
     console.log(chalk_1.default.gray("\n🚀 Run with TypeScript:"));
     console.log(chalk_1.default.gray("npm run stream"));
 }
