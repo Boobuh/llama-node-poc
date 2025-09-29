@@ -103,7 +103,7 @@ llama-node-poc/
 │       ├── chat-example.ts        # Interactive chat
 │       ├── streaming-example.ts   # Streaming responses
 │       └── node-llama-cpp-example.ts # Advanced usage
-├── dist/                  # Compiled JavaScript output
+├── dist/                  # Compiled JavaScript output (generated)
 ├── package.json           # Project dependencies and scripts
 ├── tsconfig.json         # TypeScript configuration
 ├── README.md            # This file
