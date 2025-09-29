@@ -3,8 +3,8 @@ import chalk from "chalk";
 import { config } from "./config";
 
 import { runBasicExample } from "./examples/basic-example";
-// import { runChatExample } from "./examples/chat-example";
-// import { runStreamingExample } from "./examples/streaming-example";
+import { runChatExample } from "./examples/chat-example";
+import { runStreamingExample } from "./examples/streaming-example";
 
 async function main(): Promise<void> {
   console.log(chalk.blue(config.cli.welcomeMessage));
@@ -38,7 +38,6 @@ async function main(): Promise<void> {
       await runBasicExample(options);
     });
 
-  /*
   program
     .command("chat")
     .description("Run interactive chat example")
@@ -55,7 +54,7 @@ async function main(): Promise<void> {
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
       console.log(chalk.blue("💬 Starting interactive chat..."));
       await runChatExample(options);
-       });
+    });
 
   program
     .command("stream")
@@ -73,8 +72,7 @@ async function main(): Promise<void> {
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
       console.log(chalk.blue("🌊 Running streaming example..."));
       await runStreamingExample(options);
-       });
-       */
+    });
 
   program
     .command("info")

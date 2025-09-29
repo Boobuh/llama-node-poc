@@ -6,26 +6,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runBasicExample = runBasicExample;
 exports.showApiExample = showApiExample;
 const chalk_1 = __importDefault(require("chalk"));
-const config_js_1 = require("../config.js");
+const config_1 = require("../config");
 const llamaNode = require("llama-node");
-/**
- * Basic Llama example using llama-node package - TypeScript version
- */
 async function runBasicExample(options = {}) {
     try {
         console.log(chalk_1.default.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n"));
         const Llama = llamaNode.LlamaApi;
         console.log(chalk_1.default.green("⚙️ Initializing Llama model..."));
-        const modelPath = config_js_1.config.model.path;
+        const modelPath = config_1.config.model.path;
         const generationConfig = {
-            temperature: options.temperature ?? config_js_1.config.generation.temperature,
-            maxTokens: options.maxTokens ?? config_js_1.config.generation.maxTokens,
-            topP: config_js_1.config.generation.topP,
-            topK: config_js_1.config.generation.topK,
+            temperature: options.temperature ?? config_1.config.generation.temperature,
+            maxTokens: options.maxTokens ?? config_1.config.generation.maxTokens,
+            topP: config_1.config.generation.topP,
+            topK: config_1.config.generation.topK,
         };
         console.log(chalk_1.default.cyan("Configuration:"));
         console.log(chalk_1.default.gray(`  Model Path: ${modelPath}`));
-        console.log(chalk_1.default.gray(`  Temperature: ${generationConfig.temperature}`));
+        console.log(chalk_1.default.gray(` Temperature: ${generationConfig.temperature}`));
         console.log(chalk_1.default.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
         console.log(chalk_1.default.gray(`  Top P: ${generationConfig.topP}`));
         console.log(chalk_1.default.gray(`  Top K: ${generationConfig.topK}`));
@@ -37,7 +34,7 @@ async function runBasicExample(options = {}) {
         }
         console.log(chalk_1.default.blue("\n🤖 Loading model..."));
         const api = new Llama(modelPath);
-        const prompt = config_js_1.config.prompts.basic;
+        const prompt = config_1.config.prompts.basic;
         console.log(chalk_1.default.blue("\n💭 Prompt:"), chalk_1.default.white(prompt));
         console.log(chalk_1.default.blue("🔄 Generating response...\n"));
         const startTime = Date.now();
@@ -56,9 +53,6 @@ async function runBasicExample(options = {}) {
         handleError(error, "basic example");
     }
 }
-/**
- * Display setup instructions for downloading models
- */
 function showModelSetupInstructions(modelPath) {
     console.log(chalk_1.default.yellow("\n📋 Model Setup Instructions:"));
     console.log(chalk_1.default.white("1. Download a Llama model in GGUF format"));
@@ -76,13 +70,10 @@ function showModelSetupInstructions(modelPath) {
     console.log(chalk_1.default.cyan("\n🔗 Download from: "), chalk_1.default.blue("https://huggingface.co/TheBloke"));
     console.log(chalk_1.default.yellow("\n💡 Example Setup:"));
     console.log(chalk_1.default.gray(`mkdir -p models`));
-    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${modelPath}`));
+    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguff -O ${modelPath}`));
     console.log(chalk_1.default.yellow("\n🚀 Run with TypeScript:"));
     console.log(chalk_1.default.gray("npm run basic"));
 }
-/**
- * Error handling with TypeScript types
- */
 function handleError(error, context) {
     console.error(chalk_1.default.red(`❌ Error in ${context}:`));
     if (error instanceof Error) {
@@ -103,9 +94,6 @@ function handleError(error, context) {
     console.log(chalk_1.default.gray("• Check system memory requirements"));
     console.log(chalk_1.default.gray("• Ensure proper model format (GGUF)"));
 }
-/**
- * Display API usage example
- */
 function showApiExample() {
     console.log(chalk_1.default.yellow("\n💻 TypeScript API Example:"));
     console.log(chalk_1.default.gray(`

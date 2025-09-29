@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generationConfig = exports.modelConfig = exports.config = void 0;
+exports.config = exports.generationConfig = exports.modelConfig = exports.appConfig = void 0;
 exports.validateConfig = validateConfig;
 exports.getModelRecommendation = getModelRecommendation;
 /**
  * Configuration file for Llama Node.js POC - TypeScript version
  */
-exports.config = {
+exports.appConfig = {
     model: {
         path: "./models/llama-model.gguf",
         name: "llama-2-7B-chat",
@@ -32,19 +32,20 @@ exports.config = {
         exitCommands: ["exit", "quit", "q"],
     },
 };
-exports.modelConfig = exports.config.model, exports.generationConfig = exports.config.generation;
-function validateConfig(config) {
-    const isValid = config.model.path.length > 0 &&
-        config.model.contextLength > 0 &&
-        config.model.batchSize > 0 &&
-        config.model.threads > 0 &&
-        config.generation.temperature >= 0 &&
-        config.generation.temperature <= 2 &&
-        config.generation.maxTokens > 0 &&
-        config.generation.topP >= 0 &&
-        config.generation.topP <= 1 &&
-        config.generation.topK > 0 &&
-        config.generation.repeatPenalty >= 0;
+exports.config = exports.appConfig;
+exports.modelConfig = exports.appConfig.model, exports.generationConfig = exports.appConfig.generation;
+function validateConfig(checkConfig) {
+    const isValid = checkConfig.model.path.length > 0 &&
+        checkConfig.model.contextLength > 0 &&
+        checkConfig.model.batchSize > 0 &&
+        checkConfig.model.threads > 0 &&
+        checkConfig.generation.temperature >= 0 &&
+        checkConfig.generation.temperature <= 2 &&
+        checkConfig.generation.maxTokens > 0 &&
+        checkConfig.generation.topP >= 0 &&
+        checkConfig.generation.topP <= 1 &&
+        checkConfig.generation.topK > 0 &&
+        checkConfig.generation.repeatPenalty >= 0;
     if (!isValid) {
         throw new Error("Invalid configuration detected");
     }
@@ -62,5 +63,5 @@ function getModelRecommendation(useCase) {
             return "Llama-2-7B-Chat (~4GB) - Default recommendation";
     }
 }
-exports.default = exports.config;
+exports.default = exports.appConfig;
 //# sourceMappingURL=config.js.map
