@@ -1,6 +1,6 @@
-# Llama Node.js POC
+# Llama Node.js POC - TypeScript Edition
 
-A comprehensive proof of concept demonstrating how to integrate Llama large language models with Node.js applications.
+A comprehensive proof of concept demonstrating how to integrate Llama large language models with Node.js applications, now fully refactored with **TypeScript** for better type safety and developer experience.
 
 ## 🌟 Features
 
@@ -9,12 +9,16 @@ A comprehensive proof of concept demonstrating how to integrate Llama large lang
 - 🌊 **Streaming Responses** - Real-time token streaming
 - 🖥️ **CLI Interface** - Easy command-line interface for testing
 - 📦 **Multiple Packages** - Support for different Llama implementations
+- 🔒 **Full TypeScript Support** - Complete type safety and IntelliSense
+- ⚡ **Enhanced Developer Experience** - Compile-time error checking
+- 🏗️ **Modern Architecture** - Clean, maintainable code structure
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js (v16 or higher)
+- TypeScript knowledge (beneficial but not required)
 - A Llama model in GGUF format
 
 ### Installation
@@ -23,8 +27,11 @@ A comprehensive proof of concept demonstrating how to integrate Llama large lang
 # Clone or download this project
 cd llama-node-poc
 
-# Install dependencies
+# Install dependencies (includes TypeScript tools)
 npm install
+
+# Compile TypeScript to JavaScript
+npm run build
 
 # (Optional) Download a Llama model
 mkdir -p models
@@ -35,40 +42,74 @@ wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7
 
 ### Command Line Interface
 
+#### TypeScript Development (Recommended)
+
 ```bash
-# Run basic text generation
-npm run basic
+# Run with TypeScript directly (development)
+npm run dev -- basic     # Basic example
+npm run dev -- chat      # Interactive chat
+npm run dev -- stream    # Streaming demo
+npm run dev -- info      # System information
+npm run dev -- --help    # Show all options
+```
 
-# Start interactive chat
-npm run chat
+#### Compiled JavaScript (Production)
 
-# Test streaming responses
-npm run stream
+```bash
+# Compile TypeScript first
+npm run build
 
-# Show help
-npm run help
+# Run compiled JavaScript
+npm start -- basic        # Basic example
+npm start -- chat         # Interactive chat
+npm start -- stream       # Streaming demo
+npm start -- info         # System information
+npm start -- --help       # Show all options
 ```
 
 ### Available Commands
 
-- `node index.js basic` - Basic text generation example
-- `node index.js chat` - Interactive chat with conversation history
-- `node index.js stream` - Streaming response demonstration
-- `node index.js --help` - Show all available commands
+#### Development Commands (TypeScript)
+
+- `npm run dev -- basic` - Basic text generation example
+- `npm run dev -- chat` - Interactive chat with conversation history
+- `npm run dev -- stream` - Streaming response demonstration
+- `npm run dev -- info` - Show system and configuration info
+- `npm run dev -- --help` - Show all available commands
+
+#### Build Commands
+
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm run clean` - Remove compiled files
+- `npm run rebuild` - Clean and build fresh
+
+#### Production Commands (Compiled)
+
+- `npm start -- basic` - Basic text generation (compiled)
+- `npm start -- chat` - Interactive chat (compiled)
+- `npm start -- stream` - Streaming demo (compiled)
 
 ## 📁 Project Structure
 
 ```
 llama-node-poc/
-├── index.js                 # Main CLI entry point
-├── package.json             # Project dependencies and scripts
-├── README.md               # This file
-├── models/                 # Directory for Llama model files
-│   └── README.md          # Model download instructions
-└── examples/              # Code examples
-    ├── basic-example.js   # Basic text generation
-    ├── chat-example.js    # Interactive chat
-    └── streaming-example.js # Streaming responses
+├── src/                    # TypeScript source code
+│   ├── index.ts           # Main CLI entry point
+│   ├── config.ts          # Configuration with types
+│   ├── types/             # TypeScript type definitions
+│   │   └── index.ts       # All type declarations
+│   └── examples/          # Code examples (TypeScript)
+│       ├── basic-example.ts       # Basic text generation
+│       ├── chat-example.ts        # Interactive chat
+│       ├── streaming-example.ts   # Streaming responses
+│       └── node-llama-cpp-example.ts # Advanced usage
+├── dist/                  # Compiled JavaScript output
+├── package.json           # Project dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
+├── README.md            # This file
+├── Dockerfile           # Docker container support
+└── models/             # Directory for Llama model files
+    └── README.md       # Model download instructions
 ```
 
 ## 🔧 Configuration
@@ -89,43 +130,67 @@ llama-node-poc/
 
 ## 💻 Code Examples
 
-### Basic Text Generation
+### Basic Text Generation (TypeScript)
 
-```javascript
+```typescript
+import type { LlamaConfig, GenerationResult } from "./types";
+import { config } from "./config";
+
 const llamaNode = require("llama-node");
 const Llama = llamaNode.LlamaApi;
 
-const api = new Llama("./models/llama-model.gguf");
-const response = await api.generate("Tell me about AI", {
+// Type-safe configuration
+const generationConfig: LlamaConfig = {
   temperature: 0.7,
   maxTokens: 200,
-});
+  topP: 0.9,
+  topK: 40,
+};
+
+const api = new Llama(config.model.path);
+const response: Promise<GenerationResult> = api.generate(
+  "Tell me about AI",
+  generationConfig
+);
+
 console.log(response);
 ```
 
-### Interactive Chat
+### Interactive Chat (TypeScript)
 
-```javascript
-const chatHistory = [];
-const response = await api.generate(userInput, {
+```typescript
+import type { ChatMessage, LlamaConfig } from "./types";
+
+const chatHistory: ChatMessage[] = [];
+const generationConfig: LlamaConfig = {
   temperature: 0.8,
   maxTokens: 300,
-  context: chatHistory,
-});
-chatHistory.push({ role: "user", content: userInput });
-chatHistory.push({ role: "assistant", content: response });
+  context: chatHistory.slice(-10), // Keep last 10 messages
+};
+
+const userMessage: ChatMessage = { role: "user", content: userInput };
+const response: string = await api.generate(userInput, generationConfig);
+const assistantMessage: ChatMessage = { role: "assistant", content: response };
+
+chatHistory.push(userMessage, assistantMessage);
 ```
 
-### Streaming Responses
+### Streaming Responses (TypeScript)
 
-```javascript
-await api.generate("Explain quantum computing", {
+```typescript
+import type { LlamaStreamConfig, StreamCallback } from "./types";
+
+const streamCallback: StreamCallback = (token: string): void => {
+  process.stdout.write(token);
+};
+
+const streamConfig: LlamaStreamConfig = {
   temperature: 0.7,
   stream: true,
-  callback: (token) => {
-    process.stdout.write(token);
-  },
-});
+  callback: streamCallback,
+};
+
+await api.generate("Explain quantum computing", streamConfig);
 ```
 
 ## 🛠️ Development
@@ -147,11 +212,20 @@ This POC demonstrates multiple Llama integration approaches:
 
 ## 📦 Dependencies
 
+### Runtime Dependencies
+
 - `llama-node` - Llama Node.js integration
 - `node-llama-cpp` - Alternative Llama C++ bindings
 - `commander` - CLI argument parsing
 - `chalk` - Terminal styling
 - `readline` - Interactive input handling
+
+### Development Dependencies (TypeScript)
+
+- `typescript` - TypeScript compiler
+- `ts-node` - TypeScript execution for development
+- `@types/node` - Node.js type definitions
+- `nodemon` - Development automation (optional)
 
 ## 🐛 Troubleshooting
 

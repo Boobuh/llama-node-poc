@@ -9,7 +9,6 @@ async function runStreamingExample() {
     console.log(chalk.yellow('🌊 Streaming Response Example\n'));
     console.log(chalk.cyan('This example demonstrates real-time streaming of LLM responses'));
     
-    // Example using llama-node
     const Llama = llamaNode.LlamaApi;
     
     console.log(chalk.yellow('📋 Setup Instructions:'));
@@ -36,7 +35,6 @@ console.log(chalk.blue('Streaming response:'));
 await api.generate("Write a detailed explanation of quantum computing", streamConfig);
     `));
     
-    // Simulate streaming behavior
     console.log(chalk.blue('\n📡 Simulated Streaming Output:'));
     console.log(chalk.gray('(To see real streaming, follow setup instructions above)'));
     
@@ -48,7 +46,6 @@ await api.generate("Write a detailed explanation of quantum computing", streamCo
         currentText += words[i] + ' ';
         process.stdout.write(chalk.green(words[i] + ' '));
         
-        // Simulate random delay for streaming effect
         await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
       }
       

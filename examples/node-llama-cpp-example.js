@@ -9,7 +9,6 @@ async function runNodeLlamaCppExample() {
     console.log(chalk.yellow('🚀 Node-Llama-CPP Advanced Example\n'));
     console.log(chalk.cyan('This example uses the more advanced node-llama-cpp package'));
     
-    // Example configuration
     const modelPath = './models/llama-model.gguf';
     
     console.log(chalk.yellow('📋 Setup Instructions:'));
@@ -37,10 +36,8 @@ async function runExample() {
 }
     `));
     
-    // Configuration example
     console.log(chalk.yellow('\n🔧 Configuration Options:'));
     console.log(chalk.gray(`
-// Model loading options
 const modelOptions = {
   modelPath: './models/llama-model.gguf',
   gpuLayers: -1,        // -1 for all GPU layers, 0 for CPU only
@@ -48,7 +45,6 @@ const modelOptions = {
   seed: null             // Random seed, null for random
 };
 
-// Context creation options  
 const contextOptions = {
   batchSize: 512,
   threads: 4,           // CPU threads
@@ -59,7 +55,6 @@ const contextOptions = {
   useMmap: true
 };
 
-// Generation options
 const generateOptions = {
   temperature: 0.7,
   topP: 0.9,
@@ -70,7 +65,6 @@ const generateOptions = {
 };
     `));
     
-    // Features showcase
     console.log(chalk.yellow('\n⭐ Key Features:'));
     console.log(chalk.white('• 🎯 High Performance - Optimized C++ backend'));
     console.log(chalk.white('• 🔥 GPU Acceleration - CUDA & Metal support'));

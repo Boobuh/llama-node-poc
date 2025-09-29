@@ -1,18 +1,32 @@
 {
   "name": "llama-node-poc",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Llama Node.js POC - Now refactored with TypeScript!",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "node index.js",
-    "basic": "node index.js basic",
-    "chat": "node index.js chat",
-    "stream": "node index.js stream",
-    "help": "node index.js --help",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "basic": "npm run dev -- basic",
+    "chat": "npm run dev -- chat",
+    "stream": "npm run dev -- stream",
+    "help": "npm run dev -- --help",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "llama",
+    "llm",
+    "typescript",
+    "node",
+    "ai",
+    "chatbot",
+    "streaming",
+    "poc"
+  ],
+  "author": "Boobuh",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -20,5 +34,11 @@
     "commander": "^14.0.1",
     "llama-node": "^0.1.6",
     "node-llama-cpp": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }

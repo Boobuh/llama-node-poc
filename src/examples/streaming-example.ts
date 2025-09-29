@@ -1,0 +1,291 @@
+import chalk from "chalk";
+import { config } from "../config";
+import type { LlamaStreamConfig, StreamCallback, LlamaError } from "../types";
+
+const llamaNode = require("llama-node");
+
+/**
+ * Streaming response example using llama-node package - TypeScript version
+ */
+export async function runStreamingExample(
+  options: { temperature?: number; maxTokens?: number } = {}
+): Promise<void> {
+  try {
+    console.log(chalk.yellow("🌊 Streaming Response Example (TypeScript)\n"));
+    console.log(
+      chalk.cyan(
+        "This typed example demonstrates real-time streaming of LLM responses"
+      )
+    );
+
+    const streamConfig: LlamaStreamConfig = {
+      temperature: options.temperature ?? config.generation.temperature,
+      maxTokens: options.maxTokens ?? config.generation.maxTokens,
+      topP: config.generation.topP,
+      topK: config.generation.topK,
+      repeatPenalty: config.generation.repeatPenalty,
+      stream: true,
+    };
+
+    console.log(chalk.yellow("🔧 Streaming Configuration:"));
+    console.log(chalk.gray(`  Temperature: ${streamConfig.temperature}`));
+    console.log(chalk.gray(`  Max Tokens: ${streamConfig.maxTokens}`));
+    console.log(chalk.gray(`  Stream: ${streamConfig.stream}`));
+
+    const fs = require("fs");
+    const modelExists = fs.existsSync(config.model.path);
+
+    if (!modelExists) {
+      showModelSetupInstructions();
+      return;
+    }
+
+    console.log(chalk.blue("\n🤖 Initializing streaming mode..."));
+
+    const Llama = llamaNode.LlamaApi;
+    const api = new Llama(config.model.path);
+
+    const prompt: string = config.prompts.stream;
+
+    const streamCallback: StreamCallback = (token: string): void => {
+      process.stdout.write(chalk.green(token));
+    };
+
+    console.log(chalk.blue("\n💭 Prompt:"), prompt);
+    console.log(chalk.blue("📡 Starting stream...\n"));
+
+    if (await testStreamingSupport(api)) {
+      await performRealStreaming(api, prompt, streamConfig, streamCallback);
+    } else {
+      await simulateStreaming(prompt);
+    }
+
+    console.log(chalk.yellow("\n✨ Streaming example complete!"));
+
+    showStreamingFeatures();
+  } catch (error: unknown) {
+    handleError(error as LlamaError, "streaming example");
+  }
+}
+
+/**
+ * Test if streaming is supported by the API
+ */
+async function testStreamingSupport(api: any): Promise<boolean> {
+  try {
+    if (typeof api.generate === "function") {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Perform real streaming with the llama API
+ */
+async function performRealStreaming(
+  api: any,
+  prompt: string,
+  config: LlamaStreamConfig,
+  callback: StreamCallback
+): Promise<void> {
+  try {
+    console.log(chalk.cyan("📡 Real streaming (when streaming is supported):"));
+
+    const streamConfigWithCallback: LlamaStreamConfig = {
+      ...config,
+      callback,
+    };
+
+    const startTime = Date.now();
+
+    await api.generate(prompt, streamConfigWithCallback);
+
+    const endTime = Date.now();
+
+    console.log(
+      chalk.gray(`\n⏱️ Total streaming time: ${endTime - startTime}ms`)
+    );
+  } catch (error: unknown) {
+    console.log(
+      chalk.yellow(
+        "⚠️ Real streaming not available, falling back to simulation"
+      )
+    );
+    await simulateStreaming(prompt);
+  }
+}
+
+/**
+ * Simulate streaming behavior for demonstration
+ */
+async function simulateStreaming(text: string): Promise<void> {
+  console.log(chalk.cyan("📡 Simulated streaming output:"));
+  console.log(chalk.gray("(Real streaming available when model supports it)"));
+
+  const words: string[] = text.split(" ");
+  let currentText: string = "";
+
+  for (let i = 0; i < words.length; i++) {
+    currentText += words[i];
+
+    process.stdout.write(chalk.green(words[i]));
+    if (i < words.length - 1) {
+      process.stdout.write(" ");
+    }
+
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.random() * 100 + 50)
+    );
+  }
+
+  console.log(chalk.yellow("\n\n💡 Real streaming features:"));
+  console.log(chalk.gray("• Tokens appear as they are generated"));
+  console.log(chalk.gray("• Lower perceived latency"));
+  console.log(chalk.gray("• More engaging user experience"));
+  console.log(chalk.gray("• Ability to stop generation early"));
+}
+
+/**
+ * Show streaming features and benefits
+ */
+function showStreamingFeatures(): void {
+  console.log(chalk.yellow("\n🌟 Streaming Benefits:"));
+  console.log(chalk.white("• ⚡ Real-time user feedback"));
+  console.log(chalk.white("• 🚀 Better perceived performance"));
+  console.log(chalk.white("• 💬 More engaging conversations"));
+  console.log(chalk.white("• ⏹️ Ability to stop generation early"));
+  console.log(chalk.white("• 🔄 Progressive content delivery"));
+
+  console.log(chalk.yellow("\n🛠️ Streaming Configuration Options:"));
+  console.log(chalk.gray("• Temperature: Controls randomness (0.0 - 2.0)"));
+  console.log(chalk.gray("• Max Tokens: Maximum response length"));
+  console.log(chalk.gray("• Top P: Nucleus sampling parameter"));
+  console.log(chalk.gray("• Top K: Token selection limit"));
+  console.log(chalk.gray("• Repeat Penalty: Reduces repetition"));
+
+  console.log(chalk.yellow("\n💻 TypeScript Streaming Example:"));
+  console.log(
+    chalk.gray(`
+import type { LlamaStreamConfig, StreamCallback } from '../types';
+
+const streamCallback: StreamCallback = (token: string): void => {
+  process.stdout.write(token);
+};
+
+const config: LlamaStreamConfig = {
+  temperature: 0.7,
+  maxTokens: 500,
+  stream: true,
+  callback: streamCallback
+};
+
+await api.generate("Your prompt here", config);
+  `)
+  );
+}
+
+/**
+ * Display setup instructions for models
+ */
+function showModelSetupInstructions(): void {
+  console.log(chalk.yellow("📋 Model Setup Required:"));
+  console.log(chalk.white("1. Download a Llama model in GGUF format"));
+  console.log(chalk.white("2. Place it in the ./models/ directory"));
+  console.log(chalk.white("3. Run the streaming example again"));
+
+  console.log(
+    chalk.cyan("\n🔗 Download models from: "),
+    chalk.blue("https://huggingface.co/TheBloke")
+  );
+
+  console.log(chalk.yellow("\n💡 Quick Setup:"));
+  console.log(chalk.gray(`mkdir -p models`));
+  console.log(
+    chalk.gray(
+      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${config.model.path}`
+    )
+  );
+
+  console.log(chalk.gray("\n🚀 Run with TypeScript:"));
+  console.log(chalk.gray("npm run stream"));
+}
+
+/**
+ * Error handling for streaming functionality
+ */
+function handleError(error: LlamaError, context: string): void {
+  console.error(chalk.red(`❌ Error in ${context}:`));
+
+  if (error instanceof Error) {
+    console.error(chalk.red("  Message:"), error.message);
+
+    if (error.code) {
+      console.error(chalk.red("  Code:"), error.code);
+    }
+
+    if (context === "streaming example") {
+      console.log(chalk.yellow("\n💡 Streaming Troubleshooting:"));
+      console.log(chalk.gray("• Check if model supports streaming"));
+      console.log(chalk.gray("• Verify API implementation"));
+      console.log(chalk.gray("• Test with smaller prompts first"));
+      console.log(chalk.gray("• Ensure proper memory allocation"));
+    }
+  } else {
+    console.error(chalk.red("  Unexpected error:"), error);
+  }
+}
+
+/**
+ * Streaming utilities and helpers
+ */
+export class StreamingUtils {
+  /**
+   * Create a formatted streaming callback with colors
+   */
+  static createColoredCallback(
+    color: "green" | "blue" | "red" | "yellow" | "cyan" = "green"
+  ): StreamCallback {
+    return (token: string): void => {
+      const colorFn = chalk[color];
+      process.stdout.write(colorFn(token));
+    };
+  }
+
+  /**
+   * Monitor streaming performance
+   */
+  static createMonitoredCallback(): {
+    callback: StreamCallback;
+    stats: { tokensReceived: number; startTime: number };
+  } {
+    const stats = { tokensReceived: 0, startTime: Date.now() };
+
+    const callback: StreamCallback = (token: string): void => {
+      stats.tokensReceived++;
+      process.stdout.write(chalk.green(token));
+    };
+
+    return { callback, stats };
+  }
+
+  /**
+   * Display streaming statistics
+   */
+  static displayStats(stats: {
+    tokensReceived: number;
+    startTime: number;
+  }): void {
+    const duration = Date.now() - stats.startTime;
+    const tokensPerSecond = stats.tokensReceived / (duration / 1000);
+
+    console.log(chalk.gray(`\n📊 Streaming Stats:`));
+    console.log(chalk.gray(`  Tokens: ${stats.tokensReceived}`));
+    console.log(chalk.gray(`  Duration: ${duration}ms`));
+    console.log(chalk.gray(`  Rate: ${tokensPerSecond.toFixed(2)} tokens/sec`));
+  }
+}
+
+export default runStreamingExample;

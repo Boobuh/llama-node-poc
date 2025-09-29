@@ -3,7 +3,6 @@
 const { program } = require('commander');
 const chalk = require('chalk');
 
-// Import our examples
 require('./examples/basic-example');
 require('./examples/chat-example');
 require('./examples/streaming-example');

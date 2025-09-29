@@ -8,21 +8,17 @@ async function runBasicExample() {
   try {
     console.log(chalk.yellow('📝 Basic Llama Text Generation Example\n'));
     
-    // Example using llama-node (simpler API)
     const Llama = llamaNode.LlamaApi;
     const tokenizer = llamaNode.HuggingFaceTokenizer;
     
     console.log(chalk.green('Initializing Llama model...'));
     
-    // Note: You'll need to download a model first
-    // For this example, we'll show how to set it up
     const modelPath = './models/llama-model.gguf'; // You'll need to download this
     
     console.log(chalk.cyan('Setting up model path:'), modelPath);
     console.log(chalk.cyan('Note: You need to download a Llama model (.gguf file) to run this example'));
     console.log(chalk.cyan('Download from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF'));
     
-    // Example model initialization (commented out as it requires actual model file)
     /*
     const api = new Llama(modelPath);
     
@@ -41,7 +37,6 @@ async function runBasicExample() {
     console.log(chalk.white(response));
     */
     
-    // Instead, let's show the setup pattern and API usage
     console.log(chalk.yellow('\n📋 Setup Instructions:'));
     console.log(chalk.white('1. Download a Llama model in GGUF format'));
     console.log(chalk.white('2. Place it in the ./models/ directory'));

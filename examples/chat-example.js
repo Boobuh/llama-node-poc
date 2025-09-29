@@ -16,10 +16,8 @@ async function runChatExample() {
     console.log(chalk.cyan('This example demonstrates interactive conversation with a Llama model'));
     console.log(chalk.cyan('Press Ctrl+C or type "exit" to quit\n'));
     
-    // Example using llama-node
     const Llama = llamaNode.LlamaApi;
     
-    // Chat context to maintain conversation history
     let chatHistory = [];
     
     console.log(chalk.yellow('📋 Setup Instructions:'));
@@ -41,7 +39,6 @@ const chatConfig = {
 };
     `));
     
-    // For demonstration, we'll simulate the chat interface
     console.log(chalk.blue('\n🤖 Simulated Chat Interface:'));
     console.log(chalk.gray('(To run with actual model, follow setup instructions above)'));
     
@@ -53,13 +50,10 @@ const chatConfig = {
           return;
         }
         
-        // Add user message to history
         chatHistory.push({ role: 'user', content: input });
         
-        // Simulate response (you would replace this with actual API call)
         console.log(chalk.blue('🤖 Assistant: '), chalk.white('(Simulated response - add model to get real responses)'));
         
-        // In real implementation:
         /*
         const response = await api.generate(input, {
           temperature: 0.8,
