@@ -17,7 +17,7 @@ async function main() {
         .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
         .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val))
         .action(async (options) => {
-        console.log(chalk.blue("🚀 Running basic Llama example..."));
+        console.log(chalk.blue("Running basic Llama example..."));
         await runBasicExample(options);
     });
     program
@@ -26,7 +26,7 @@ async function main() {
         .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
         .option("-m, --max-tokens <number>", "Maximum tokens per response", (val) => parseInt(val))
         .action(async (options) => {
-        console.log(chalk.blue("💬 Starting interactive chat..."));
+        console.log(chalk.blue("Starting interactive chat..."));
         await runChatExample(options);
     });
     program
@@ -35,7 +35,7 @@ async function main() {
         .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
         .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val))
         .action(async (options) => {
-        console.log(chalk.blue("🌊 Running streaming example..."));
+        console.log(chalk.blue("Running streaming example..."));
         await runStreamingExample(options);
     });
     program
@@ -45,14 +45,14 @@ async function main() {
         showSystemInfo();
     });
     program.on("command:*", () => {
-        console.error(chalk.red("❌ Invalid command"));
+        console.error(chalk.red("Invalid command"));
         program.outputHelp();
         process.exit(1);
     });
     await program.parseAsync();
 }
 function showSystemInfo() {
-    console.log(chalk.yellow("📋 System Information\n"));
+    console.log(chalk.yellow("System Information\n"));
     console.log(chalk.cyan("Environment:"));
     console.log(`  Node.js: ${process.version}`);
     console.log(`  Platform: ${process.platform}`);
@@ -76,17 +76,17 @@ function showSystemInfo() {
     console.log("  help   - Show command help");
 }
 process.on("uncaughtException", (error) => {
-    console.error(chalk.red("❌ Uncaught Exception:"), error.message);
+    console.error(chalk.red("Uncaught Exception:"), error.message);
     process.exit(1);
 });
 process.on("unhandledRejection", (reason) => {
-    console.error(chalk.red("❌ Unhandled Rejection:"), reason);
+    console.error(chalk.red("Unhandled Rejection:"), reason);
     process.exit(1);
 });
 if (import.meta.url === `file://${process.argv[1]}` ||
     process.argv[1]?.includes("index")) {
     main().catch((error) => {
-        console.error(chalk.red("❌ Application Error:"), error.message);
+        console.error(chalk.red("Application Error:"), error.message);
         process.exit(1);
     });
 }

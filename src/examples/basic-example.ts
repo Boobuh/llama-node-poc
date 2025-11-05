@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import fs from "fs";
+import fs from "node:fs";
 import { config } from "../config";
 import type { LlamaConfig, LlamaError } from "../types";
 
@@ -8,10 +8,10 @@ export async function runBasicExample(
 ): Promise<void> {
   try {
     console.log(
-      chalk.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n")
+      chalk.yellow("Basic Llama Text Generation Example (TypeScript)\n")
     );
 
-    console.log(chalk.green("⚙️ Initializing Llama model..."));
+    console.log(chalk.green("Initializing Llama model..."));
 
     const modelPath: string = config.model.path;
     const generationConfig: LlamaConfig = {
@@ -35,7 +35,7 @@ export async function runBasicExample(
       return;
     }
 
-    console.log(chalk.blue("\n🤖 Loading model..."));
+    console.log(chalk.blue("\nLoading model..."));
     const nodeLlamaCpp = await import("node-llama-cpp");
     const { getLlama, LlamaChatSession } = nodeLlamaCpp;
 
@@ -52,8 +52,8 @@ export async function runBasicExample(
 
     const prompt: string = config.prompts.basic;
 
-    console.log(chalk.blue("\n💭 Prompt:"), chalk.white(prompt));
-    console.log(chalk.blue("🔄 Generating response...\n"));
+    console.log(chalk.blue("\nPrompt:"), chalk.white(prompt));
+    console.log(chalk.blue("Generating response...\n"));
 
     const startTime = Date.now();
     const promptOptions = {
@@ -66,16 +66,16 @@ export async function runBasicExample(
     const response = await session.prompt(prompt, promptOptions);
     const endTime = Date.now();
 
-    console.log(chalk.green("✅ Response:"));
+    console.log(chalk.green("Response:"));
     console.log(chalk.white(response));
-    console.log(chalk.gray(`\n⏱️ Generation time: ${endTime - startTime}ms`));
+    console.log(chalk.gray(`\nGeneration time: ${endTime - startTime}ms`));
   } catch (error: unknown) {
     handleError(error as LlamaError, "basic example");
   }
 }
 
 function showModelSetupInstructions(modelPath: string): void {
-  console.log(chalk.yellow("\n📋 Model Setup Instructions:"));
+  console.log(chalk.yellow("\nModel Setup Instructions:"));
   console.log(chalk.white("1. Download a Llama model in GGUF format"));
   console.log(chalk.white("2. Place it in the ./models/ directory"));
   console.log(chalk.white("3. Run the example again"));
@@ -92,11 +92,11 @@ function showModelSetupInstructions(modelPath: string): void {
   });
 
   console.log(
-    chalk.cyan("\n🔗 Download from: "),
+    chalk.cyan("\nDownload from: "),
     chalk.blue("https://huggingface.co/TheBloke")
   );
 
-  console.log(chalk.yellow("\n💡 Example Setup:"));
+  console.log(chalk.yellow("\nExample Setup:"));
   console.log(chalk.gray(`mkdir -p models`));
   console.log(
     chalk.gray(
@@ -104,12 +104,12 @@ function showModelSetupInstructions(modelPath: string): void {
     )
   );
 
-  console.log(chalk.yellow("\n🚀 Run with TypeScript:"));
+  console.log(chalk.yellow("\nRun with TypeScript:"));
   console.log(chalk.gray("npm run basic"));
 }
 
 function handleError(error: LlamaError, context: string): void {
-  console.error(chalk.red(`❌ Error in ${context}:`));
+  console.error(chalk.red(`Error in ${context}:`));
 
   if (error instanceof Error) {
     console.error(chalk.red("  Message:"), error.message);
@@ -128,7 +128,7 @@ function handleError(error: LlamaError, context: string): void {
     console.error(chalk.red("  Unexpected error:"), error);
   }
 
-  console.log(chalk.yellow("\n💡 Troubleshooting Tips:"));
+  console.log(chalk.yellow("\nTroubleshooting Tips:"));
   console.log(chalk.gray("• Check model file exists and is accessible"));
   console.log(chalk.gray("• Verify Node.js version compatibility"));
   console.log(chalk.gray("• Check system memory requirements"));
@@ -136,7 +136,7 @@ function handleError(error: LlamaError, context: string): void {
 }
 
 export function showApiExample(): void {
-  console.log(chalk.yellow("\n💻 TypeScript API Example:"));
+  console.log(chalk.yellow("\nTypeScript API Example:"));
   console.log(
     chalk.gray(`
 import type { LlamaConfig, GenerationResult } from '../types';

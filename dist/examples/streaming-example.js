@@ -1,9 +1,9 @@
 import chalk from "chalk";
-import fs from "fs";
+import fs from "node:fs";
 import { config } from "../config";
 export async function runStreamingExample(options = {}) {
     try {
-        console.log(chalk.yellow("🌊 Streaming Llama Response Example (TypeScript)\n"));
+        console.log(chalk.yellow("Streaming Llama Response Example (TypeScript)\n"));
         const modelPath = config.model.path;
         const streamConfig = {
             temperature: options.temperature ?? config.generation.temperature,
@@ -20,7 +20,7 @@ export async function runStreamingExample(options = {}) {
             showModelSetupInstructions(modelPath);
             return;
         }
-        console.log(chalk.blue("\n🤖 Loading model..."));
+        console.log(chalk.blue("\nLoading model..."));
         const nodeLlamaCpp = await import("node-llama-cpp");
         const { getLlama, LlamaChatSession } = nodeLlamaCpp;
         const llama = await getLlama();
@@ -32,8 +32,8 @@ export async function runStreamingExample(options = {}) {
             contextSequence: context.getSequence(),
         });
         const prompt = config.prompts.stream;
-        console.log(chalk.blue("\n💭 Prompt:"), chalk.white(prompt));
-        console.log(chalk.blue("🌊 Streaming response (watch as it generates)...\n"));
+        console.log(chalk.blue("\nPrompt:"), chalk.white(prompt));
+        console.log(chalk.blue("Streaming response (watch as it generates)...\n"));
         await streamResponse(session, prompt, streamConfig);
     }
     catch (error) {
@@ -43,7 +43,7 @@ export async function runStreamingExample(options = {}) {
 async function streamResponse(session, prompt, config) {
     const startTime = Date.now();
     let fullResponse = "";
-    console.log(chalk.green("🤖 Response: "));
+    console.log(chalk.green("Response: "));
     try {
         await session.prompt(prompt, {
             temperature: config.temperature ?? 0.7,
@@ -58,16 +58,16 @@ async function streamResponse(session, prompt, config) {
             },
         });
         const endTime = Date.now();
-        console.log(chalk.gray(`\n\n⏱️ Total generation time: ${endTime - startTime}ms`));
-        console.log(chalk.gray(`📝 Total characters: ${fullResponse.length}`));
+        console.log(chalk.gray(`\n\nTotal generation time: ${endTime - startTime}ms`));
+        console.log(chalk.gray(`Total characters: ${fullResponse.length}`));
     }
     catch (error) {
-        console.error(chalk.red("❌ Streaming error:"), error);
+        console.error(chalk.red("Streaming error:"), error);
         throw error;
     }
 }
 function showModelSetupInstructions(modelPath) {
-    console.log(chalk.yellow("\n📋 Model Setup Instructions:"));
+    console.log(chalk.yellow("\nModel Setup Instructions:"));
     console.log(chalk.white("1. Download a Llama model in GGUF format"));
     console.log(chalk.white("2. Place it in the ./models/ directory"));
     console.log(chalk.white("3. Run the streaming example again"));
@@ -80,15 +80,15 @@ function showModelSetupInstructions(modelPath) {
     streamingModels.forEach((model) => {
         console.log(chalk.gray(`   • ${model}`));
     });
-    console.log(chalk.cyan("\n🔗 Download from: "), chalk.blue("https://huggingface.co/TheBloke"));
-    console.log(chalk.yellow("\n💡 Example Setup:"));
+    console.log(chalk.cyan("\nDownload from: "), chalk.blue("https://huggingface.co/TheBloke"));
+    console.log(chalk.yellow("\nExample Setup:"));
     console.log(chalk.gray(`mkdir -p models`));
     console.log(chalk.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${modelPath}`));
-    console.log(chalk.yellow("\n🚀 Run Streaming:"));
+    console.log(chalk.yellow("\nRun Streaming:"));
     console.log(chalk.gray("npm run stream"));
 }
 function handleError(error, context) {
-    console.error(chalk.red(`❌ Error in ${context}:`));
+    console.error(chalk.red(`Error in ${context}:`));
     if (error instanceof Error) {
         console.error(chalk.red("  Message:"), error.message);
         if (error.code) {
@@ -101,14 +101,14 @@ function handleError(error, context) {
     else {
         console.error(chalk.red("  Unexpected error:"), error);
     }
-    console.log(chalk.yellow("\n💡 Troubleshooting:"));
+    console.log(chalk.yellow("\nTroubleshooting:"));
     console.log(chalk.gray("• Check streaming implementation"));
     console.log(chalk.gray("• Verify model compatibility"));
     console.log(chalk.gray("• Check callback function"));
     console.log(chalk.gray("• Ensure sufficient RAM"));
 }
 export function showStreamingExample() {
-    console.log(chalk.yellow("\n💻 Streaming API Example:"));
+    console.log(chalk.yellow("\nStreaming API Example:"));
     console.log(chalk.gray(`
 const session = new LlamaChatSession({ contextSequence });
 

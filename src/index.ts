@@ -34,7 +34,7 @@ async function main(): Promise<void> {
       (val: string) => parseInt(val)
     )
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
-      console.log(chalk.blue("🚀 Running basic Llama example..."));
+      console.log(chalk.blue("Running basic Llama example..."));
       await runBasicExample(options);
     });
 
@@ -52,7 +52,7 @@ async function main(): Promise<void> {
       (val: string) => parseInt(val)
     )
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
-      console.log(chalk.blue("💬 Starting interactive chat..."));
+      console.log(chalk.blue("Starting interactive chat..."));
       await runChatExample(options);
     });
 
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
       (val: string) => parseInt(val)
     )
     .action(async (options: { temperature?: number; maxTokens?: number }) => {
-      console.log(chalk.blue("🌊 Running streaming example..."));
+      console.log(chalk.blue("Running streaming example..."));
       await runStreamingExample(options);
     });
 
@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     });
 
   program.on("command:*", () => {
-    console.error(chalk.red("❌ Invalid command"));
+    console.error(chalk.red("Invalid command"));
     program.outputHelp();
     process.exit(1);
   });
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
 }
 
 function showSystemInfo(): void {
-  console.log(chalk.yellow("📋 System Information\n"));
+  console.log(chalk.yellow("System Information\n"));
 
   console.log(chalk.cyan("Environment:"));
   console.log(`  Node.js: ${process.version}`);
@@ -120,12 +120,12 @@ function showSystemInfo(): void {
 }
 
 process.on("uncaughtException", (error: Error) => {
-  console.error(chalk.red("❌ Uncaught Exception:"), error.message);
+  console.error(chalk.red("Uncaught Exception:"), error.message);
   process.exit(1);
 });
 
 process.on("unhandledRejection", (reason: unknown) => {
-  console.error(chalk.red("❌ Unhandled Rejection:"), reason);
+  console.error(chalk.red("Unhandled Rejection:"), reason);
   process.exit(1);
 });
 
@@ -134,7 +134,7 @@ if (
   process.argv[1]?.includes("index")
 ) {
   main().catch((error: Error) => {
-    console.error(chalk.red("❌ Application Error:"), error.message);
+    console.error(chalk.red("Application Error:"), error.message);
     process.exit(1);
   });
 }

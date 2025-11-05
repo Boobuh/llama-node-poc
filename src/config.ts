@@ -28,7 +28,7 @@ export const appConfig: AppConfig = {
   },
 
   cli: {
-    welcomeMessage: "🚀 Llama Node.js POC - Interactive Examples (TypeScript)",
+    welcomeMessage: "Llama Node.js POC - Interactive Examples (TypeScript)",
     exitCommands: ["exit", "quit", "q"],
   },
 };

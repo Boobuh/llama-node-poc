@@ -23,7 +23,7 @@ export const appConfig = {
         stream: "Write a detailed explanation of quantum computing.",
     },
     cli: {
-        welcomeMessage: "🚀 Llama Node.js POC - Interactive Examples (TypeScript)",
+        welcomeMessage: "Llama Node.js POC - Interactive Examples (TypeScript)",
         exitCommands: ["exit", "quit", "q"],
     },
 };
