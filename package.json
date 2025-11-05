@@ -14,7 +14,8 @@
     "help": "npm run dev -- --help",
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ts-node src/tests/comprehensive-test.ts",
+    "test:quick": "ts-node src/tests/quick-test.ts"
   },
   "keywords": [
     "llama",

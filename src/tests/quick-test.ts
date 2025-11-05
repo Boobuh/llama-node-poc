@@ -1,0 +1,59 @@
+import chalk from "chalk";
+import { config } from "../config";
+
+const llamaNode = require("llama-node");
+const fs = require("fs");
+
+async function quickTest(): Promise<void> {
+  console.log(chalk.blue("\n⚡ Quick Connectivity Test\n"));
+
+  const modelPath: string = config.model.path;
+
+  if (!fs.existsSync(modelPath)) {
+    console.log(chalk.red("❌ Model file not found!"));
+    console.log(chalk.yellow(`\nModel Path: ${modelPath}`));
+    console.log(chalk.gray("\nPlease download a model first."));
+    process.exit(1);
+  }
+
+  try {
+    console.log(chalk.green("⚙️ Loading model..."));
+    const Llama = llamaNode.LlamaApi;
+    const api = new Llama(modelPath);
+
+    console.log(chalk.green("✅ Model loaded!\n"));
+
+    console.log(chalk.cyan("Testing basic response..."));
+    const startTime = Date.now();
+    const response = await api.generate("Say 'Hello, World!' in one sentence.", {
+      temperature: 0.7,
+      maxTokens: 50,
+    });
+    const duration = Date.now() - startTime;
+
+    const responseText = response.text || response.toString();
+
+    console.log(chalk.green("\n✅ Response received:"));
+    console.log(chalk.white(`"${responseText}"`));
+    console.log(chalk.gray(`\n⏱️ Generated in ${duration}ms`));
+
+    if (responseText.length > 0) {
+      console.log(chalk.green("\n🎉 Basic connectivity test PASSED!"));
+      console.log(chalk.cyan("\nRun 'npm test' for comprehensive test suite."));
+    } else {
+      console.log(chalk.red("\n❌ Empty response received"));
+    }
+  } catch (error: any) {
+    console.error(chalk.red("\n❌ Test failed:"), error.message);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  quickTest().catch((error) => {
+    console.error(chalk.red("\n❌ Fatal error:"), error);
+    process.exit(1);
+  });
+}
+
+export { quickTest };
