@@ -7,15 +7,15 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "tsx src/index.ts",
     "basic": "npm run dev -- basic",
     "chat": "npm run dev -- chat",
     "stream": "npm run dev -- stream",
     "help": "npm run dev -- --help",
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build",
-    "test": "ts-node src/tests/comprehensive-test.ts",
-    "test:quick": "ts-node src/tests/quick-test.ts"
+    "test": "tsx src/tests/comprehensive-test.ts",
+    "test:quick": "tsx src/tests/quick-test.ts"
   },
   "keywords": [
     "llama",
@@ -29,8 +29,9 @@
   ],
   "author": "Boobuh",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
+    "@llama-node/llama-cpp": "^0.1.6",
     "chalk": "^4.1.2",
     "commander": "^14.0.1",
     "llama-node": "^0.1.6",
@@ -40,6 +41,7 @@
     "@types/node": "^24.5.2",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
 }

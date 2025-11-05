@@ -1,9 +1,8 @@
 import * as readline from "readline";
 import chalk from "chalk";
+import fs from "fs";
 import { config } from "../config";
-import type { ChatMessage, LlamaConfig, LlamaError } from "../types";
-
-const llamaNode = require("llama-node");
+import type { LlamaConfig, LlamaError } from "../types";
 
 interface ReadLineInterface {
   question(query: string, callback: (answer: string) => void): void;
@@ -18,7 +17,6 @@ export async function runChatExample(
       chalk.yellow("💬 Interactive Llama Chat Example (TypeScript)\n")
     );
 
-    const Llama = llamaNode.LlamaApi;
     const modelPath: string = config.model.path;
 
     const generationConfig: LlamaConfig = {
@@ -33,7 +31,6 @@ export async function runChatExample(
     console.log(chalk.gray(`  Temperature: ${generationConfig.temperature}`));
     console.log(chalk.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
 
-    const fs = require("fs");
     const modelExists = fs.existsSync(modelPath);
 
     if (!modelExists) {
@@ -42,14 +39,18 @@ export async function runChatExample(
     }
 
     console.log(chalk.blue("\n🤖 Loading model..."));
-    const api = new Llama(modelPath);
+    const nodeLlamaCpp = await import("node-llama-cpp");
+    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
 
-    const chatHistory: ChatMessage[] = [
-      {
-        role: "system",
-        content: config.prompts.chat,
-      },
-    ];
+    const llama = await getLlama();
+    const model = await llama.loadModel({
+      modelPath: modelPath,
+    });
+
+    const context = await model.createContext();
+    const session = new LlamaChatSession({
+      contextSequence: context.getSequence(),
+    });
 
     console.log(chalk.green("\n✅ Chat initialized!"));
     console.log(chalk.gray("Type 'exit', 'quit', or 'q' to end."));
@@ -60,7 +61,7 @@ export async function runChatExample(
       output: process.stdout,
     }) as ReadLineInterface;
 
-    await startChatLoop(rl, api, chatHistory, generationConfig);
+    await startChatLoop(rl, session, generationConfig);
 
     rl.close();
   } catch (error: unknown) {
@@ -70,8 +71,7 @@ export async function runChatExample(
 
 async function startChatLoop(
   rl: ReadLineInterface,
-  api: any,
-  chatHistory: ChatMessage[],
+  session: any,
   config: LlamaConfig
 ): Promise<void> {
   const askQuestion = (): void => {
@@ -86,25 +86,20 @@ async function startChatLoop(
         return;
       }
 
-      chatHistory.push({
-        role: "user",
-        content: userInput,
-      });
-
       console.log(chalk.green("Assistant: "), chalk.white("thinking..."));
-      const startTime = Date.now();
 
       try {
-        const response = await generateResponse(api, chatHistory, config);
+        const startTime = Date.now();
+        const response = await session.prompt(userInput, {
+          temperature: config.temperature ?? 0.7,
+          topP: config.topP ?? 0.9,
+          topK: config.topK ?? 40,
+          maxTokens: config.maxTokens ?? 200,
+        });
         const endTime = Date.now();
 
-        chatHistory.push({
-          role: "assistant",
-          content: response.text || response.toString(),
-        });
-
         console.log(
-          chalk.white(response.text || response),
+          chalk.white(response),
           chalk.gray(`\n  (${endTime - startTime}ms)`)
         );
       } catch (error) {
@@ -116,26 +111,6 @@ async function startChatLoop(
   };
 
   askQuestion();
-}
-
-async function generateResponse(
-  api: any,
-  chatHistory: ChatMessage[],
-  config: LlamaConfig
-): Promise<any> {
-  const prompt = buildPromptFromHistory(chatHistory);
-  return await api.generate(prompt, config);
-}
-
-function buildPromptFromHistory(history: ChatMessage[]): string {
-  return (
-    history
-      .map(
-        (msg) =>
-          `${msg.role === "user" ? "Human" : "Assistant"}: ${msg.content}`
-      )
-      .join("\n\n") + "\nAssistant: "
-  );
 }
 
 function isExitCommand(input: string): boolean {

@@ -1,8 +1,7 @@
 import chalk from "chalk";
 import { config } from "../config";
 
-const llamaNode = require("llama-node");
-const fs = require("fs");
+import fs from "node:fs";
 
 async function quickTest(): Promise<void> {
   console.log(chalk.blue("\n⚡ Quick Connectivity Test\n"));
@@ -18,26 +17,37 @@ async function quickTest(): Promise<void> {
 
   try {
     console.log(chalk.green("⚙️ Loading model..."));
-    const Llama = llamaNode.LlamaApi;
-    const api = new Llama(modelPath);
+    const nodeLlamaCpp = await import("node-llama-cpp");
+    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+
+    const llama = await getLlama();
+    const model = await llama.loadModel({
+      modelPath: modelPath,
+    });
+
+    const context = await model.createContext();
+    const session = new LlamaChatSession({
+      contextSequence: context.getSequence(),
+    });
 
     console.log(chalk.green("✅ Model loaded!\n"));
 
     console.log(chalk.cyan("Testing basic response..."));
     const startTime = Date.now();
-    const response = await api.generate("Say 'Hello, World!' in one sentence.", {
-      temperature: 0.7,
-      maxTokens: 50,
-    });
+    const response = await session.prompt(
+      "Say 'Hello, World!' in one sentence.",
+      {
+        temperature: 0.7,
+        maxTokens: 50,
+      }
+    );
     const duration = Date.now() - startTime;
 
-    const responseText = response.text || response.toString();
-
     console.log(chalk.green("\n✅ Response received:"));
-    console.log(chalk.white(`"${responseText}"`));
+    console.log(chalk.white(`"${response}"`));
     console.log(chalk.gray(`\n⏱️ Generated in ${duration}ms`));
 
-    if (responseText.length > 0) {
+    if (response && response.length > 0) {
       console.log(chalk.green("\n🎉 Basic connectivity test PASSED!"));
       console.log(chalk.cyan("\nRun 'npm test' for comprehensive test suite."));
     } else {
@@ -45,15 +55,16 @@ async function quickTest(): Promise<void> {
     }
   } catch (error: any) {
     console.error(chalk.red("\n❌ Test failed:"), error.message);
+    if (error.stack) {
+      console.error(chalk.gray(error.stack));
+    }
     process.exit(1);
   }
 }
 
-if (require.main === module) {
-  quickTest().catch((error) => {
-    console.error(chalk.red("\n❌ Fatal error:"), error);
-    process.exit(1);
-  });
-}
+quickTest().catch((error) => {
+  console.error(chalk.red("\n❌ Fatal error:"), error);
+  process.exit(1);
+});
 
 export { quickTest };

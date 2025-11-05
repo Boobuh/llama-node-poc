@@ -1,102 +1,103 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.runBasicExample = runBasicExample;
-exports.showApiExample = showApiExample;
-const chalk_1 = __importDefault(require("chalk"));
-const config_1 = require("../config");
-const llamaNode = require("llama-node");
-async function runBasicExample(options = {}) {
+import chalk from "chalk";
+import fs from "fs";
+import { config } from "../config";
+export async function runBasicExample(options = {}) {
     try {
-        console.log(chalk_1.default.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n"));
-        const Llama = llamaNode.LlamaApi;
-        console.log(chalk_1.default.green("⚙️ Initializing Llama model..."));
-        const modelPath = config_1.config.model.path;
+        console.log(chalk.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n"));
+        console.log(chalk.green("⚙️ Initializing Llama model..."));
+        const modelPath = config.model.path;
         const generationConfig = {
-            temperature: options.temperature ?? config_1.config.generation.temperature,
-            maxTokens: options.maxTokens ?? config_1.config.generation.maxTokens,
-            topP: config_1.config.generation.topP,
-            topK: config_1.config.generation.topK,
+            temperature: options.temperature ?? config.generation.temperature,
+            maxTokens: options.maxTokens ?? config.generation.maxTokens,
+            topP: config.generation.topP,
+            topK: config.generation.topK,
         };
-        console.log(chalk_1.default.cyan("Configuration:"));
-        console.log(chalk_1.default.gray(`  Model Path: ${modelPath}`));
-        console.log(chalk_1.default.gray(` Temperature: ${generationConfig.temperature}`));
-        console.log(chalk_1.default.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
-        console.log(chalk_1.default.gray(`  Top P: ${generationConfig.topP}`));
-        console.log(chalk_1.default.gray(`  Top K: ${generationConfig.topK}`));
-        const fs = require("fs");
+        console.log(chalk.cyan("Configuration:"));
+        console.log(chalk.gray(`  Model Path: ${modelPath}`));
+        console.log(chalk.gray(` Temperature: ${generationConfig.temperature}`));
+        console.log(chalk.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
+        console.log(chalk.gray(`  Top P: ${generationConfig.topP}`));
+        console.log(chalk.gray(`  Top K: ${generationConfig.topK}`));
         const modelExists = fs.existsSync(modelPath);
         if (!modelExists) {
             showModelSetupInstructions(modelPath);
             return;
         }
-        console.log(chalk_1.default.blue("\n🤖 Loading model..."));
-        const api = new Llama(modelPath);
-        const prompt = config_1.config.prompts.basic;
-        console.log(chalk_1.default.blue("\n💭 Prompt:"), chalk_1.default.white(prompt));
-        console.log(chalk_1.default.blue("🔄 Generating response...\n"));
+        console.log(chalk.blue("\n🤖 Loading model..."));
+        const nodeLlamaCpp = await import("node-llama-cpp");
+        const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+        const llama = await getLlama();
+        const model = await llama.loadModel({
+            modelPath: modelPath,
+        });
+        const context = await model.createContext();
+        const session = new LlamaChatSession({
+            contextSequence: context.getSequence(),
+        });
+        const prompt = config.prompts.basic;
+        console.log(chalk.blue("\n💭 Prompt:"), chalk.white(prompt));
+        console.log(chalk.blue("🔄 Generating response...\n"));
         const startTime = Date.now();
-        const response = await api.generate(prompt, generationConfig);
+        const promptOptions = {
+            temperature: generationConfig.temperature ?? config.generation.temperature,
+            topP: generationConfig.topP ?? config.generation.topP,
+            topK: generationConfig.topK ?? config.generation.topK,
+            maxTokens: generationConfig.maxTokens ?? config.generation.maxTokens,
+        };
+        const response = await session.prompt(prompt, promptOptions);
         const endTime = Date.now();
-        console.log(chalk_1.default.green("✅ Response:"));
-        console.log(chalk_1.default.white(response.text || response));
-        console.log(chalk_1.default.gray(`\n⏱️ Generation time: ${endTime - startTime}ms`));
-        if (typeof response === "object" &&
-            "tokens" in response &&
-            response.tokens) {
-            console.log(chalk_1.default.gray(`🎯 Tokens generated: ${response.tokens}`));
-        }
+        console.log(chalk.green("✅ Response:"));
+        console.log(chalk.white(response));
+        console.log(chalk.gray(`\n⏱️ Generation time: ${endTime - startTime}ms`));
     }
     catch (error) {
         handleError(error, "basic example");
     }
 }
 function showModelSetupInstructions(modelPath) {
-    console.log(chalk_1.default.yellow("\n📋 Model Setup Instructions:"));
-    console.log(chalk_1.default.white("1. Download a Llama model in GGUF format"));
-    console.log(chalk_1.default.white("2. Place it in the ./models/ directory"));
-    console.log(chalk_1.default.white("3. Run the example again"));
-    console.log(chalk_1.default.white("4. Supported models:"));
+    console.log(chalk.yellow("\n📋 Model Setup Instructions:"));
+    console.log(chalk.white("1. Download a Llama model in GGUF format"));
+    console.log(chalk.white("2. Place it in the ./models/ directory"));
+    console.log(chalk.white("3. Run the example again"));
+    console.log(chalk.white("4. Supported models:"));
     const recommendedModels = [
         "Llama-2-7B-Chat (~4GB) - Development & Testing",
         "Llama-2-13B-Chat (~7GB) - Production Use",
         "Llama-2-70B-Chat (~40GB) - High-Quality Applications",
     ];
     recommendedModels.forEach((model) => {
-        console.log(chalk_1.default.gray(`   • ${model}`));
+        console.log(chalk.gray(`   • ${model}`));
     });
-    console.log(chalk_1.default.cyan("\n🔗 Download from: "), chalk_1.default.blue("https://huggingface.co/TheBloke"));
-    console.log(chalk_1.default.yellow("\n💡 Example Setup:"));
-    console.log(chalk_1.default.gray(`mkdir -p models`));
-    console.log(chalk_1.default.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguff -O ${modelPath}`));
-    console.log(chalk_1.default.yellow("\n🚀 Run with TypeScript:"));
-    console.log(chalk_1.default.gray("npm run basic"));
+    console.log(chalk.cyan("\n🔗 Download from: "), chalk.blue("https://huggingface.co/TheBloke"));
+    console.log(chalk.yellow("\n💡 Example Setup:"));
+    console.log(chalk.gray(`mkdir -p models`));
+    console.log(chalk.gray(`wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguff -O ${modelPath}`));
+    console.log(chalk.yellow("\n🚀 Run with TypeScript:"));
+    console.log(chalk.gray("npm run basic"));
 }
 function handleError(error, context) {
-    console.error(chalk_1.default.red(`❌ Error in ${context}:`));
+    console.error(chalk.red(`❌ Error in ${context}:`));
     if (error instanceof Error) {
-        console.error(chalk_1.default.red("  Message:"), error.message);
+        console.error(chalk.red("  Message:"), error.message);
         if (error.code) {
-            console.error(chalk_1.default.red("  Code:"), error.code);
+            console.error(chalk.red("  Code:"), error.code);
         }
         if (error.details) {
-            console.error(chalk_1.default.red("  Details:"), JSON.stringify(error.details, null, 2));
+            console.error(chalk.red("  Details:"), JSON.stringify(error.details, null, 2));
         }
     }
     else {
-        console.error(chalk_1.default.red("  Unexpected error:"), error);
+        console.error(chalk.red("  Unexpected error:"), error);
     }
-    console.log(chalk_1.default.yellow("\n💡 Troubleshooting Tips:"));
-    console.log(chalk_1.default.gray("• Check model file exists and is accessible"));
-    console.log(chalk_1.default.gray("• Verify Node.js version compatibility"));
-    console.log(chalk_1.default.gray("• Check system memory requirements"));
-    console.log(chalk_1.default.gray("• Ensure proper model format (GGUF)"));
+    console.log(chalk.yellow("\n💡 Troubleshooting Tips:"));
+    console.log(chalk.gray("• Check model file exists and is accessible"));
+    console.log(chalk.gray("• Verify Node.js version compatibility"));
+    console.log(chalk.gray("• Check system memory requirements"));
+    console.log(chalk.gray("• Ensure proper model format (GGUF)"));
 }
-function showApiExample() {
-    console.log(chalk_1.default.yellow("\n💻 TypeScript API Example:"));
-    console.log(chalk_1.default.gray(`
+export function showApiExample() {
+    console.log(chalk.yellow("\n💻 TypeScript API Example:"));
+    console.log(chalk.gray(`
 import type { LlamaConfig, GenerationResult } from '../types';
 
 const api = new Llama('./models/llama-model.gguf');

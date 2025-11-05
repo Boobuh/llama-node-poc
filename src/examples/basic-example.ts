@@ -1,8 +1,7 @@
 import chalk from "chalk";
+import fs from "fs";
 import { config } from "../config";
-import type { LlamaConfig, GenerationResult, LlamaError } from "../types";
-
-const llamaNode = require("llama-node");
+import type { LlamaConfig, LlamaError } from "../types";
 
 export async function runBasicExample(
   options: { temperature?: number; maxTokens?: number } = {}
@@ -11,8 +10,6 @@ export async function runBasicExample(
     console.log(
       chalk.yellow("📝 Basic Llama Text Generation Example (TypeScript)\n")
     );
-
-    const Llama = llamaNode.LlamaApi;
 
     console.log(chalk.green("⚙️ Initializing Llama model..."));
 
@@ -31,7 +28,6 @@ export async function runBasicExample(
     console.log(chalk.gray(`  Top P: ${generationConfig.topP}`));
     console.log(chalk.gray(`  Top K: ${generationConfig.topK}`));
 
-    const fs = require("fs");
     const modelExists = fs.existsSync(modelPath);
 
     if (!modelExists) {
@@ -40,7 +36,19 @@ export async function runBasicExample(
     }
 
     console.log(chalk.blue("\n🤖 Loading model..."));
-    const api = new Llama(modelPath);
+    const nodeLlamaCpp = await import("node-llama-cpp");
+    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+
+    const llama = await getLlama();
+    const model = await llama.loadModel({
+      modelPath: modelPath,
+    });
+
+    const context = await model.createContext();
+
+    const session = new LlamaChatSession({
+      contextSequence: context.getSequence(),
+    });
 
     const prompt: string = config.prompts.basic;
 
@@ -48,23 +56,19 @@ export async function runBasicExample(
     console.log(chalk.blue("🔄 Generating response...\n"));
 
     const startTime = Date.now();
-    const response: GenerationResult = await api.generate(
-      prompt,
-      generationConfig
-    );
+    const promptOptions = {
+      temperature:
+        generationConfig.temperature ?? config.generation.temperature,
+      topP: generationConfig.topP ?? config.generation.topP,
+      topK: generationConfig.topK ?? config.generation.topK,
+      maxTokens: generationConfig.maxTokens ?? config.generation.maxTokens,
+    };
+    const response = await session.prompt(prompt, promptOptions);
     const endTime = Date.now();
 
     console.log(chalk.green("✅ Response:"));
-    console.log(chalk.white(response.text || response));
+    console.log(chalk.white(response));
     console.log(chalk.gray(`\n⏱️ Generation time: ${endTime - startTime}ms`));
-
-    if (
-      typeof response === "object" &&
-      "tokens" in response &&
-      response.tokens
-    ) {
-      console.log(chalk.gray(`🎯 Tokens generated: ${response.tokens}`));
-    }
   } catch (error: unknown) {
     handleError(error as LlamaError, "basic example");
   }

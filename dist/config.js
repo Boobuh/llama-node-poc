@@ -1,12 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = exports.generationConfig = exports.modelConfig = exports.appConfig = void 0;
-exports.validateConfig = validateConfig;
-exports.getModelRecommendation = getModelRecommendation;
 /**
  * Configuration file for Llama Node.js POC - TypeScript version
  */
-exports.appConfig = {
+export const appConfig = {
     model: {
         path: "./models/llama-model.gguf",
         name: "llama-2-7B-chat",
@@ -32,9 +27,8 @@ exports.appConfig = {
         exitCommands: ["exit", "quit", "q"],
     },
 };
-exports.config = exports.appConfig;
-exports.modelConfig = exports.appConfig.model, exports.generationConfig = exports.appConfig.generation;
-function validateConfig(checkConfig) {
+export const { model: modelConfig, generation: generationConfig } = appConfig;
+export function validateConfig(checkConfig) {
     const isValid = checkConfig.model.path.length > 0 &&
         checkConfig.model.contextLength > 0 &&
         checkConfig.model.batchSize > 0 &&
@@ -51,7 +45,7 @@ function validateConfig(checkConfig) {
     }
     return isValid;
 }
-function getModelRecommendation(useCase) {
+export function getModelRecommendation(useCase) {
     switch (useCase) {
         case "development":
             return "Llama-2-7B-Chat (~4GB) - Great for development & testing";
@@ -63,5 +57,6 @@ function getModelRecommendation(useCase) {
             return "Llama-2-7B-Chat (~4GB) - Default recommendation";
     }
 }
-exports.default = exports.appConfig;
+export default appConfig;
+export { appConfig as config };
 //# sourceMappingURL=config.js.map

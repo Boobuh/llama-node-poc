@@ -129,7 +129,10 @@ process.on("unhandledRejection", (reason: unknown) => {
   process.exit(1);
 });
 
-if (require.main === module) {
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.includes("index")
+) {
   main().catch((error: Error) => {
     console.error(chalk.red("❌ Application Error:"), error.message);
     process.exit(1);

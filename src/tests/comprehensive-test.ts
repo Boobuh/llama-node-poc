@@ -1,9 +1,6 @@
 import chalk from "chalk";
+import fs from "fs";
 import { config } from "../config";
-import type { LlamaConfig } from "../types";
-
-const llamaNode = require("llama-node");
-const fs = require("fs");
 
 interface TestResult {
   name: string;
@@ -21,37 +18,54 @@ interface TestSuite {
 const testResults: TestSuite[] = [];
 
 async function runComprehensiveTests(): Promise<void> {
-  console.log(chalk.blue("\n🧪 Starting Comprehensive Llama-Node Test Suite\n"));
-  console.log(chalk.gray("=" .repeat(60)));
+  console.log(
+    chalk.blue("\n🧪 Starting Comprehensive Llama-Node Test Suite\n")
+  );
+  console.log(chalk.gray("=".repeat(60)));
 
   const modelPath: string = config.model.path;
-  
+
   if (!fs.existsSync(modelPath)) {
     console.log(chalk.red("\n❌ Model file not found!"));
     console.log(chalk.yellow(`\n📋 Model Path: ${modelPath}`));
     console.log(chalk.gray("Please download a model first."));
     console.log(chalk.cyan("\n💡 Quick Setup:"));
     console.log(chalk.gray("mkdir -p models"));
-    console.log(chalk.gray("wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ./models/llama-model.gguf"));
+    console.log(
+      chalk.gray(
+        "wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ./models/llama-model.gguf"
+      )
+    );
     process.exit(1);
   }
 
   try {
     console.log(chalk.green("\n⚙️ Loading Llama model..."));
-    const Llama = llamaNode.LlamaApi;
-    const api = new Llama(modelPath);
+    const nodeLlamaCpp = await import("node-llama-cpp");
+    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+    
+    const llama = await getLlama();
+    const model = await llama.loadModel({
+      modelPath: modelPath,
+    });
+
+    const context = await model.createContext();
+    const session = new LlamaChatSession({
+      contextSequence: context.getSequence(),
+    });
+    
     console.log(chalk.green("✅ Model loaded successfully!\n"));
 
-    await testBasicConnectivity(api);
-    await testTemperatureControl(api);
-    await testTokenLimits(api);
-    await testStreamingOutput(api);
-    await testLanguageUnderstanding(api);
-    await testReasoning(api);
-    await testCodeGeneration(api);
-    await testContextRetention(api);
-    await testSummarization(api);
-    await testCreativeText(api);
+    await testBasicConnectivity(session);
+    await testTemperatureControl(session);
+    await testTokenLimits(session);
+    await testStreamingOutput(session);
+    await testLanguageUnderstanding(session);
+    await testReasoning(session);
+    await testCodeGeneration(session);
+    await testContextRetention(session);
+    await testSummarization(session);
+    await testCreativeText(session);
 
     printTestSummary();
   } catch (error) {
@@ -60,20 +74,20 @@ async function runComprehensiveTests(): Promise<void> {
   }
 }
 
-async function testBasicConnectivity(api: any): Promise<void> {
+async function testBasicConnectivity(session: any): Promise<void> {
   const suite: TestSuite = { name: "🔌 Basic Connectivity", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Basic Connectivity"));
 
   const startTime = Date.now();
   try {
-    const response = await api.generate("Hello!", {
+    const response = await session.prompt("Hello!", {
       temperature: 0.7,
       maxTokens: 50,
     });
 
     const duration = Date.now() - startTime;
-    const responseText = response.text || response.toString();
+    const responseText = typeof response === "string" ? response : String(response);
 
     suite.tests.push({
       name: "Simple greeting response",
@@ -101,7 +115,7 @@ async function testBasicConnectivity(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testTemperatureControl(api: any): Promise<void> {
+async function testTemperatureControl(session: any): Promise<void> {
   const suite: TestSuite = { name: "🌡️ Temperature Control", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Temperature Control"));
@@ -109,18 +123,18 @@ async function testTemperatureControl(api: any): Promise<void> {
   const prompt = "Explain what a tree is in one sentence.";
 
   try {
-    const lowTempResponse = await api.generate(prompt, {
+    const lowTempResponse = await session.prompt(prompt, {
       temperature: 0.1,
       maxTokens: 100,
     });
 
-    const highTempResponse = await api.generate(prompt, {
+    const highTempResponse = await session.prompt(prompt, {
       temperature: 1.0,
       maxTokens: 100,
     });
 
-    const lowText = lowTempResponse.text || lowTempResponse.toString();
-    const highText = highTempResponse.text || highTempResponse.toString();
+    const lowText = typeof lowTempResponse === "string" ? lowTempResponse : String(lowTempResponse);
+    const highText = typeof highTempResponse === "string" ? highTempResponse : String(highTempResponse);
 
     suite.tests.push({
       name: "Low temperature (0.1) - deterministic",
@@ -155,25 +169,20 @@ async function testTemperatureControl(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testTokenLimits(api: any): Promise<void> {
+async function testTokenLimits(session: any): Promise<void> {
   const suite: TestSuite = { name: "🔢 Token Limits", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Token Limits"));
 
   try {
-    const shortConfig: LlamaConfig = {
+    const response = await session.prompt("Count from 1 to 20:", {
       temperature: 0.7,
       maxTokens: 10,
       topP: config.generation.topP,
       topK: config.generation.topK,
-    };
+    });
 
-    const response = await api.generate(
-      "Count from 1 to 20:",
-      shortConfig
-    );
-
-    const responseText = response.text || response.toString();
+    const responseText = typeof response === "string" ? response : String(response);
     const wordCount = responseText.split(/\s+/).length;
 
     suite.tests.push({
@@ -200,7 +209,7 @@ async function testTokenLimits(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testStreamingOutput(api: any): Promise<void> {
+async function testStreamingOutput(session: any): Promise<void> {
   const suite: TestSuite = { name: "🌊 Streaming Output", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Streaming Output"));
@@ -209,19 +218,16 @@ async function testStreamingOutput(api: any): Promise<void> {
     let streamedTokens = 0;
     let streamComplete = false;
 
-    const callback = (token: string): void => {
-      if (token) {
-        streamedTokens++;
-        process.stdout.write(chalk.gray("."));
-      }
-    };
-
     const startTime = Date.now();
-    await api.generate("Say hello world five times:", {
+    await session.prompt("Say hello world five times:", {
       temperature: 0.7,
       maxTokens: 50,
-      stream: true,
-      callback: callback,
+      onTextChunk: (text: string): void => {
+        if (text) {
+          streamedTokens++;
+          process.stdout.write(chalk.gray("."));
+        }
+      },
     });
     streamComplete = true;
     const duration = Date.now() - startTime;
@@ -254,7 +260,7 @@ async function testStreamingOutput(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testLanguageUnderstanding(api: any): Promise<void> {
+async function testLanguageUnderstanding(session: any): Promise<void> {
   const suite: TestSuite = { name: "💬 Language Understanding", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Language Understanding"));
@@ -272,12 +278,12 @@ async function testLanguageUnderstanding(api: any): Promise<void> {
 
   for (const test of testPrompts) {
     try {
-      const response = await api.generate(test.prompt, {
+      const response = await session.prompt(test.prompt, {
         temperature: 0.3,
         maxTokens: 100,
       });
 
-      const responseText = response.text || response.toString().toLowerCase();
+      const responseText = (typeof response === "string" ? response : String(response)).toLowerCase();
 
       suite.tests.push({
         name: test.prompt.substring(0, 40),
@@ -298,7 +304,7 @@ async function testLanguageUnderstanding(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testReasoning(api: any): Promise<void> {
+async function testReasoning(session: any): Promise<void> {
   const suite: TestSuite = { name: "🧠 Step-by-Step Reasoning", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Reasoning"));
@@ -307,17 +313,20 @@ async function testReasoning(api: any): Promise<void> {
     const prompt =
       "If I have 3 apples and eat 1, how many are left? Show your reasoning step by step.";
 
-    const response = await api.generate(prompt, {
+    const response = await session.prompt(prompt, {
       temperature: 0.5,
       maxTokens: 150,
     });
 
-    const responseText = response.text || response.toString().toLowerCase();
+    const responseText = (typeof response === "string" ? response : String(response)).toLowerCase();
 
     suite.tests.push({
       name: "Math reasoning test",
       passed: responseText.includes("2") || responseText.includes("two"),
-      message: `Response contains reasoning: "${responseText.substring(0, 80)}..."`,
+      message: `Response contains reasoning: "${responseText.substring(
+        0,
+        80
+      )}..."`,
     });
   } catch (error: any) {
     suite.tests.push({
@@ -332,7 +341,7 @@ async function testReasoning(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testCodeGeneration(api: any): Promise<void> {
+async function testCodeGeneration(session: any): Promise<void> {
   const suite: TestSuite = { name: "💻 Code Generation", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Code Generation"));
@@ -341,20 +350,24 @@ async function testCodeGeneration(api: any): Promise<void> {
     const prompt =
       "Write a JavaScript function that reverses a string. Only return the code, no explanation.";
 
-    const response = await api.generate(prompt, {
+    const response = await session.prompt(prompt, {
       temperature: 0.3,
       maxTokens: 200,
     });
 
-    const responseText = response.text || response.toString();
+    const responseText = typeof response === "string" ? response : String(response);
 
-    const hasFunction = responseText.includes("function") || responseText.includes("=>");
-    const hasReverse = responseText.includes("reverse") || responseText.includes("split");
+    const hasFunction =
+      responseText.includes("function") || responseText.includes("=>");
+    const hasReverse =
+      responseText.includes("reverse") || responseText.includes("split");
 
     suite.tests.push({
       name: "Generates code structure",
       passed: hasFunction,
-      message: hasFunction ? "Contains function definition" : "No function found",
+      message: hasFunction
+        ? "Contains function definition"
+        : "No function found",
     });
 
     suite.tests.push({
@@ -375,7 +388,7 @@ async function testCodeGeneration(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testContextRetention(api: any): Promise<void> {
+async function testContextRetention(session: any): Promise<void> {
   const suite: TestSuite = { name: "📚 Context Retention", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Context Retention"));
@@ -384,19 +397,19 @@ async function testContextRetention(api: any): Promise<void> {
     const contextPrompt =
       "My dog's name is Rex. He is 5 years old. Remember this.";
 
-    await api.generate(contextPrompt, {
+    await session.prompt(contextPrompt, {
       temperature: 0.5,
       maxTokens: 50,
     });
 
     const question = "How old is Rex and what is his name?";
 
-    const response = await api.generate(question, {
+    const response = await session.prompt(question, {
       temperature: 0.5,
       maxTokens: 100,
     });
 
-    const responseText = response.text || response.toString().toLowerCase();
+    const responseText = (typeof response === "string" ? response : String(response)).toLowerCase();
 
     const hasRex = responseText.includes("rex");
     const hasAge = responseText.includes("5") || responseText.includes("five");
@@ -404,9 +417,10 @@ async function testContextRetention(api: any): Promise<void> {
     suite.tests.push({
       name: "Context retention test",
       passed: hasRex || hasAge,
-      message: hasRex && hasAge
-        ? "Context retained correctly"
-        : "Context may not be retained (stateless model)",
+      message:
+        hasRex && hasAge
+          ? "Context retained correctly"
+          : "Context may not be retained (stateless model)",
     });
   } catch (error: any) {
     suite.tests.push({
@@ -421,7 +435,7 @@ async function testContextRetention(api: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testSummarization(api: any): Promise<void> {
+async function testSummarization(session: any): Promise<void> {
   const suite: TestSuite = { name: "📝 Summarization", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Summarization"));
@@ -438,12 +452,12 @@ functions that humans associate with the human mind, such as "learning" and "pro
 
     const prompt = `Summarize this text in one sentence: ${longText}`;
 
-    const response = await api.generate(prompt, {
+    const response = await session.prompt(prompt, {
       temperature: 0.4,
       maxTokens: 100,
     });
 
-    const responseText = response.text || response.toString();
+    const responseText = typeof response === "string" ? response : String(response);
     const isShorter = responseText.length < longText.length;
 
     suite.tests.push({
@@ -464,20 +478,21 @@ functions that humans associate with the human mind, such as "learning" and "pro
   testResults.push(suite);
 }
 
-async function testCreativeText(api: any): Promise<void> {
+async function testCreativeText(session: any): Promise<void> {
   const suite: TestSuite = { name: "✨ Creative Text", tests: [] };
 
   console.log(chalk.cyan("\n📋 Test Suite: Creative Text"));
 
   try {
-    const prompt = "Write a short story about a robot discovering emotions (3 sentences).";
+    const prompt =
+      "Write a short story about a robot discovering emotions (3 sentences).";
 
-    const response = await api.generate(prompt, {
+    const response = await session.prompt(prompt, {
       temperature: 0.8,
       maxTokens: 200,
     });
 
-    const responseText = response.text || response.toString();
+    const responseText = typeof response === "string" ? response : String(response);
 
     suite.tests.push({
       name: "Creative story generation",
@@ -485,13 +500,14 @@ async function testCreativeText(api: any): Promise<void> {
       message: `Story: "${responseText.substring(0, 120)}..."`,
     });
 
-    const hasCoherence =
-      responseText.split(/[.!?]/).length >= 2;
+    const hasCoherence = responseText.split(/[.!?]/).length >= 2;
 
     suite.tests.push({
       name: "Story coherence",
       passed: hasCoherence,
-      message: hasCoherence ? "Multiple sentences generated" : "Single sentence only",
+      message: hasCoherence
+        ? "Multiple sentences generated"
+        : "Single sentence only",
     });
   } catch (error: any) {
     suite.tests.push({
@@ -542,7 +558,12 @@ function printTestSummary(): void {
 
   console.log(chalk.blue("\n" + "-".repeat(60)));
   const passRate = ((passedTests / totalTests) * 100).toFixed(1);
-  const summaryColor = passRate >= "80" ? chalk.green : passRate >= "50" ? chalk.yellow : chalk.red;
+  const summaryColor =
+    passRate >= "80"
+      ? chalk.green
+      : passRate >= "50"
+      ? chalk.yellow
+      : chalk.red;
 
   console.log(
     summaryColor(
@@ -551,21 +572,29 @@ function printTestSummary(): void {
   );
 
   if (passedTests === totalTests) {
-    console.log(chalk.green("\n🎉 All tests passed! Your implementation is working correctly."));
+    console.log(
+      chalk.green(
+        "\n🎉 All tests passed! Your implementation is working correctly."
+      )
+    );
   } else if (passedTests >= totalTests * 0.8) {
-    console.log(chalk.yellow("\n⚠️ Most tests passed. Some issues may be expected behavior."));
+    console.log(
+      chalk.yellow(
+        "\n⚠️ Most tests passed. Some issues may be expected behavior."
+      )
+    );
   } else {
-    console.log(chalk.red("\n❌ Several tests failed. Review the implementation."));
+    console.log(
+      chalk.red("\n❌ Several tests failed. Review the implementation.")
+    );
   }
 
   console.log(chalk.gray("\n" + "=".repeat(60) + "\n"));
 }
 
-if (require.main === module) {
-  runComprehensiveTests().catch((error) => {
-    console.error(chalk.red("\n❌ Test suite failed:"), error);
-    process.exit(1);
-  });
-}
+runComprehensiveTests().catch((error) => {
+  console.error(chalk.red("\n❌ Test suite failed:"), error);
+  process.exit(1);
+});
 
 export { runComprehensiveTests };

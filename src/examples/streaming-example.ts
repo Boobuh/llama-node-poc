@@ -1,8 +1,7 @@
 import chalk from "chalk";
+import fs from "fs";
 import { config } from "../config";
-import type { LlamaStreamConfig, StreamCallback, LlamaError } from "../types";
-
-const llamaNode = require("llama-node");
+import type { LlamaStreamConfig, LlamaError } from "../types";
 
 export async function runStreamingExample(
   options: { temperature?: number; maxTokens?: number } = {}
@@ -12,7 +11,6 @@ export async function runStreamingExample(
       chalk.yellow("🌊 Streaming Llama Response Example (TypeScript)\n")
     );
 
-    const Llama = llamaNode.LlamaApi;
     const modelPath: string = config.model.path;
 
     const streamConfig: LlamaStreamConfig = {
@@ -27,7 +25,6 @@ export async function runStreamingExample(
     console.log(chalk.gray(`  Temperature: ${streamConfig.temperature}`));
     console.log(chalk.gray(`  Max Tokens: ${streamConfig.maxTokens}`));
 
-    const fs = require("fs");
     const modelExists = fs.existsSync(modelPath);
 
     if (!modelExists) {
@@ -36,7 +33,18 @@ export async function runStreamingExample(
     }
 
     console.log(chalk.blue("\n🤖 Loading model..."));
-    const api = new Llama(modelPath);
+    const nodeLlamaCpp = await import("node-llama-cpp");
+    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+
+    const llama = await getLlama();
+    const model = await llama.loadModel({
+      modelPath: modelPath,
+    });
+
+    const context = await model.createContext();
+    const session = new LlamaChatSession({
+      contextSequence: context.getSequence(),
+    });
 
     const prompt: string = config.prompts.stream;
 
@@ -45,40 +53,41 @@ export async function runStreamingExample(
       chalk.blue("🌊 Streaming response (watch as it generates)...\n")
     );
 
-    await streamResponse(api, prompt, streamConfig);
+    await streamResponse(session, prompt, streamConfig);
   } catch (error: unknown) {
     handleError(error as LlamaError, "streaming example");
   }
 }
 
 async function streamResponse(
-  api: any,
+  session: any,
   prompt: string,
   config: LlamaStreamConfig
 ): Promise<void> {
   const startTime = Date.now();
-
-  const callback: StreamCallback = (token: string) => {
-    if (token) {
-      process.stdout.write(chalk.white(token));
-    }
-  };
+  let fullResponse = "";
 
   console.log(chalk.green("🤖 Response: "));
 
   try {
-    const result = await api.generate(prompt, {
-      ...config,
-      stream: true,
-      callback: callback,
+    await session.prompt(prompt, {
+      temperature: config.temperature ?? 0.7,
+      topP: config.topP ?? 0.9,
+      topK: config.topK ?? 40,
+      maxTokens: config.maxTokens ?? 200,
+      onTextChunk: (text: string) => {
+        if (text) {
+          fullResponse += text;
+          process.stdout.write(chalk.white(text));
+        }
+      },
     });
-
-    console.log(chalk.white(result.text || result));
 
     const endTime = Date.now();
     console.log(
       chalk.gray(`\n\n⏱️ Total generation time: ${endTime - startTime}ms`)
     );
+    console.log(chalk.gray(`📝 Total characters: ${fullResponse.length}`));
   } catch (error) {
     console.error(chalk.red("❌ Streaming error:"), error);
     throw error;
@@ -150,15 +159,13 @@ export function showStreamingExample(): void {
   console.log(chalk.yellow("\n💻 Streaming API Example:"));
   console.log(
     chalk.gray(`
-const api = new Llama('./models/model.gguf');
+const session = new LlamaChatSession({ contextSequence });
 
-const response = await api.generate("Write a story", {
+await session.prompt("Write a story", {
   temperature: 0.7,
   maxTokens: 200,
-  stream: true,
-  callback: (token, isComplete) => {
-    if (token) process.stdout.write(token);
-    if (isComplete) console.log("\\nDone!");
+  onTextChunk: (text) => {
+    process.stdout.write(text);
   }
 });
   `)

@@ -1,1 +1,1 @@
-{"version":3,"file":"chat-example.d.ts","sourceRoot":"","sources":["../../src/examples/chat-example.ts"],"names":[],"mappings":"AAYA,wBAAsB,cAAc,CAClC,OAAO,GAAE;IAAE,WAAW,CAAC,EAAE,MAAM,CAAC;IAAC,SAAS,CAAC,EAAE,MAAM,CAAA;CAAO,GACzD,OAAO,CAAC,IAAI,CAAC,CAsDf"}
+{"version":3,"file":"chat-example.d.ts","sourceRoot":"","sources":["../../src/examples/chat-example.ts"],"names":[],"mappings":"AAWA,wBAAsB,cAAc,CAClC,OAAO,GAAE;IAAE,WAAW,CAAC,EAAE,MAAM,CAAC;IAAC,SAAS,CAAC,EAAE,MAAM,CAAA;CAAO,GACzD,OAAO,CAAC,IAAI,CAAC,CAwDf"}
