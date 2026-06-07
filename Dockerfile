@@ -1,5 +1,5 @@
 # Use official Node.js runtime as base image
-FROM node:18-slim
+FROM node:22-slim
 
 # Set working directory
 WORKDIR /app
@@ -16,10 +16,11 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 
 # Install Node.js dependencies
-RUN npm ci --only=-production
+RUN npm ci --omit=dev
 
-# Copy application code
+# Copy application code and build
 COPY . .
+RUN npm run build
 
 # Create models directory
 RUN mkdir -p models
@@ -28,9 +29,9 @@ RUN mkdir -p models
 EXPOSE 3000
 
 # Default command
-CMD ["node", "index.js", "--help"]
+CMD ["node", "dist/index.js", "--help"]
 
 # Instructions for running with Docker
 # 1. Build: docker build -t llama-node-poc .
-# 2. Run basic: docker run -v $(pwd)/models:/app/models llama-node-poc node index.js basic
-# 3. Interactive: docker run -it -v $(pwd)/models:/app/models llama-node-poc node index.js chat
+# 2. Run basic: docker run -v $(pwd)/models:/app/models llama-node-poc node dist/index.js basic
+# 3. Interactive: docker run -it -v $(pwd)/models:/app/models llama-node-poc node dist/index.js chat

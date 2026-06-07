@@ -1,266 +1,164 @@
-# Llama Node.js POC - TypeScript Edition
+# Llama Node.js POC — TypeScript + node-llama-cpp
 
-A comprehensive proof of concept demonstrating how to integrate Llama large language models with Node.js applications, now fully refactored with **TypeScript** for better type safety and developer experience.
+A proof of concept for running local LLM inference in Node.js with TypeScript, CLI examples, streaming, and a regression test suite suitable for CI/CD.
 
-## 🌟 Features
+## Features
 
-- ✅ **Basic Text Generation** - Simple prompt to response generation
-- 💬 **Interactive Chat** - Multi-turn conversation with context
-- 🌊 **Streaming Responses** - Real-time token streaming
-- 🖥️ **CLI Interface** - Easy command-line interface for testing
-- 📦 **Multiple Packages** - Support for different Llama implementations
-- 🔒 **Full TypeScript Support** - Complete type safety and IntelliSense
-- ⚡ **Enhanced Developer Experience** - Compile-time error checking
-- 🏗️ **Modern Architecture** - Clean, maintainable code structure
+- Basic text generation, interactive chat, and streaming responses
+- CLI via Commander.js
+- 31-test backend capability suite (`npm run test`)
+- TypeScript with ES modules
+- Docker support
 
-## 🚀 Quick Start
+## Stack
 
-### Prerequisites
+| Package                                                        | Version        | Role                                                    |
+| -------------------------------------------------------------- | -------------- | ------------------------------------------------------- |
+| [node-llama-cpp](https://www.npmjs.com/package/node-llama-cpp) | `^3.18.1`      | Active bindings to llama.cpp — **used by this project** |
+| [llama-node](https://www.npmjs.com/package/llama-node)         | `0.1.6` (2023) | Archived, unmaintained — **not used**                   |
 
-- Node.js (v16 or higher)
-- TypeScript knowledge (beneficial but not required)
-- A Llama model in GGUF format
+## Prerequisites
 
-### Installation
+- Node.js 20+ (tested on v22)
+- A GGUF model (~4 GB for Llama-2-7B Q4_K_M)
+- ~6 GB RAM for CPU inference
+
+## Quick start
 
 ```bash
-# Clone or download this project
+git clone https://github.com/Boobuh/llama-node-poc.git
 cd llama-node-poc
-
-# Install dependencies (includes TypeScript tools)
 npm install
 
-# Compile TypeScript to JavaScript
-npm run build
-
-# (Optional) Download a Llama model
 mkdir -p models
-wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O models/llama-model.gguf
+wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf \
+  -O models/llama-model.gguf
+
+npm run test:quick
+npm run basic
 ```
 
-## 📖 Usage
-
-### Command Line Interface
-
-#### TypeScript Development (Recommended)
+## Usage
 
 ```bash
-# Run with TypeScript directly (development)
-npm run dev -- basic     # Basic example
-npm run dev -- chat      # Interactive chat
-npm run dev -- stream    # Streaming demo
-npm run dev -- info      # System information
-npm run dev -- --help    # Show all options
+npm run dev -- basic     # basic generation
+npm run dev -- chat      # interactive chat
+npm run dev -- stream    # streaming demo
+npm run dev -- info      # system/config info
+npm run test:quick       # fast connectivity test
+npm run test             # full regression suite
+npm run generate:examples # regenerate article outputs
 ```
 
-#### Compiled JavaScript (Production)
+Production build:
 
 ```bash
-# Compile TypeScript first
 npm run build
-
-# Run compiled JavaScript
-npm start -- basic        # Basic example
-npm start -- chat         # Interactive chat
-npm start -- stream       # Streaming demo
-npm start -- info         # System information
-npm start -- --help       # Show all options
+npm start -- basic
 ```
 
-### Available Commands
-
-#### Development Commands (TypeScript)
-
-- `npm run dev -- basic` - Basic text generation example
-- `npm run dev -- chat` - Interactive chat with conversation history
-- `npm run dev -- stream` - Streaming response demonstration
-- `npm run dev -- info` - Show system and configuration info
-- `npm run dev -- --help` - Show all available commands
-
-#### Build Commands
-
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm run clean` - Remove compiled files
-- `npm run rebuild` - Clean and build fresh
-
-#### Production Commands (Compiled)
-
-- `npm start -- basic` - Basic text generation (compiled)
-- `npm start -- chat` - Interactive chat (compiled)
-- `npm start -- stream` - Streaming demo (compiled)
-
-## 📁 Project Structure
+## Project structure
 
 ```
 llama-node-poc/
-├── src/                    # TypeScript source code
-│   ├── index.ts           # Main CLI entry point
-│   ├── config.ts          # Configuration with types
-│   ├── types/             # TypeScript type definitions
-│   │   └── index.ts       # All type declarations
-│   └── examples/          # Code examples (TypeScript)
-│       ├── basic-example.ts       # Basic text generation
-│       ├── chat-example.ts        # Interactive chat
-│       ├── streaming-example.ts   # Streaming responses
-│       └── node-llama-cpp-example.ts # Advanced usage
-├── dist/                  # Compiled JavaScript output (generated)
-├── package.json           # Project dependencies and scripts
-├── tsconfig.json         # TypeScript configuration
-├── README.md            # This file
-├── Dockerfile           # Docker container support
-└── models/             # Directory for Llama model files
-    └── README.md       # Model download instructions
+├── src/
+│   ├── index.ts
+│   ├── config.ts
+│   ├── types/
+│   ├── examples/
+│   │   ├── basic-example.ts
+│   │   ├── chat-example.ts
+│   │   └── streaming-example.ts
+│   └── tests/
+│       ├── quick-test.ts
+│       ├── comprehensive-test.ts
+│       └── generate-examples.ts
+├── models/
+├── dist/
+└── Dockerfile
 ```
 
-## 🔧 Configuration
-
-### Model Setup
-
-1. **Download a Model**: Visit [Hugging Face GGUF Models](https://huggingface.co/TheBloke) and download a Llama model
-2. **Place in Models Directory**: Save the `.gguf` file in the `./models/` directory
-3. **Update Model Path**: Edit the examples to point to your model file
-
-### Recommended Models
-
-| Model            | Size  | Quality | Speed  | Use Case                  |
-| ---------------- | ----- | ------- | ------ | ------------------------- |
-| Llama-2-7B-Chat  | ~4GB  | Good    | Fast   | Development & Testing     |
-| Llama-2-13B-Chat | ~7GB  | Better  | Medium | Production Use            |
-| Llama-2-70B-Chat | ~40GB | Best    | Slow   | High-Quality Applications |
-
-## 💻 Code Examples
-
-### Basic Text Generation (TypeScript)
+## Code example
 
 ```typescript
-import type { LlamaConfig, GenerationResult } from "./types";
-import { config } from "./config";
+import { getLlama, LlamaChatSession } from "node-llama-cpp";
 
-const llamaNode = require("llama-node");
-const Llama = llamaNode.LlamaApi;
+const llama = await getLlama();
+const model = await llama.loadModel({
+  modelPath: "./models/llama-model.gguf",
+});
+const context = await model.createContext();
+const session = new LlamaChatSession({
+  contextSequence: context.getSequence(),
+});
 
-// Type-safe configuration
-const generationConfig: LlamaConfig = {
+const response = await session.prompt("Hello!", {
   temperature: 0.7,
   maxTokens: 200,
   topP: 0.9,
   topK: 40,
-};
-
-const api = new Llama(config.model.path);
-const response: Promise<GenerationResult> = api.generate(
-  "Tell me about AI",
-  generationConfig
-);
+});
 
 console.log(response);
 ```
 
-### Interactive Chat (TypeScript)
+Streaming:
 
 ```typescript
-import type { ChatMessage, LlamaConfig } from "./types";
-
-const chatHistory: ChatMessage[] = [];
-const generationConfig: LlamaConfig = {
-  temperature: 0.8,
-  maxTokens: 300,
-  context: chatHistory.slice(-10), // Keep last 10 messages
-};
-
-const userMessage: ChatMessage = { role: "user", content: userInput };
-const response: string = await api.generate(userInput, generationConfig);
-const assistantMessage: ChatMessage = { role: "assistant", content: response };
-
-chatHistory.push(userMessage, assistantMessage);
-```
-
-### Streaming Responses (TypeScript)
-
-```typescript
-import type { LlamaStreamConfig, StreamCallback } from "./types";
-
-const streamCallback: StreamCallback = (token: string): void => {
-  process.stdout.write(token);
-};
-
-const streamConfig: LlamaStreamConfig = {
+await session.prompt("Explain quantum computing", {
   temperature: 0.7,
-  stream: true,
-  callback: streamCallback,
-};
-
-await api.generate("Explain quantum computing", streamConfig);
+  maxTokens: 300,
+  onTextChunk: (text) => process.stdout.write(text),
+});
 ```
 
-## 🛠️ Development
+## Configuration
 
-### Adding New Features
+Edit `src/config.ts`:
 
-1. Create new example files in `./examples/`
-2. Export functions from example files
-3. Add commands to `index.js`
-4. Update this README
+```typescript
+export const appConfig = {
+  model: {
+    path: "./models/llama-model.gguf",
+    name: "llama-2-7B-chat",
+    contextLength: 4096,
+    threads: 4,
+    gpuLayers: -1, // -1 = all GPU layers, 0 = CPU only
+  },
+  generation: {
+    temperature: 0.7,
+    maxTokens: 200,
+    topP: 0.9,
+    topK: 40,
+  },
+};
+```
 
-### Supported Packages
+## Recommended models
 
-This POC demonstrates multiple Llama integration approaches:
+| Model                           | Size     | Notes                           |
+| ------------------------------- | -------- | ------------------------------- |
+| Llama-2-7B-Chat Q4_K_M          | ~4 GB    | Default for development         |
+| Llama-3.x / Qwen / Mistral GGUF | varies   | Supported by node-llama-cpp 3.x |
+| Q4_K_M                          | balanced | Good default quantization       |
+| Q8_0                            | larger   | Higher quality                  |
 
-- **`llama-node`** - Simple API for basic usage
-- **`node-llama-cpp`** - More advanced with better performance
-- **Custom implementations** - Extensible architecture
+GGUF sources: [Hugging Face GGUF models](https://huggingface.co/models?library=gguf), quantizers such as [bartowski](https://huggingface.co/bartowski).
 
-## 📦 Dependencies
+## Testing
 
-### Runtime Dependencies
+- `npm run test:quick` — loads model and checks a single response (~10-20s)
+- `npm run test` — 31 regression tests across instruction following, JSON output, context retention, latency, and more (~5-10 min)
 
-- `llama-node` - Llama Node.js integration
-- `node-llama-cpp` - Alternative Llama C++ bindings
-- `commander` - CLI argument parsing
-- `chalk` - Terminal styling
-- `readline` - Interactive input handling
+Determinism tests may fail on some models/hardware; that is expected for small local models.
 
-### Development Dependencies (TypeScript)
+## Troubleshooting
 
-- `typescript` - TypeScript compiler
-- `ts-node` - TypeScript execution for development
-- `@types/node` - Node.js type definitions
-- `nodemon` - Development automation (optional)
+- **Model not found** — place a `.gguf` file in `./models/`
+- **Out of memory** — use a smaller quantization (Q4_K_M or Q2_K)
+- **Slow inference** — enable GPU layers or reduce context length
+- **Tokenizer warning** — `special_eos_id` warnings from older Llama-2 GGUF files are usually harmless
 
-## 🐛 Troubleshooting
+## License
 
-### Common Issues
-
-1. **Model Not Found**: Ensure the model file is in `./models/` directory
-2. **Memory Issues**: Try a smaller model (7B instead of 70B)
-3. **Slow Performance**: Consider using GPU acceleration or smaller models
-4. **Installation Errors**: Make sure you have Node.js 16+ and sufficient disk space
-
-### Performance Tips
-
-- Use `Q4_K_M` quantized models for best size/quality balance
-- Consider GPU acceleration for faster inference
-- Monitor system resources during model loading
-- Use streaming for better perceived performance
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the ISC License - see the package.json file for details.
-
-## 🙏 Acknowledgments
-
-- [Hugging Face](https://huggingface.co/) for hosting model repositories
-- [TheBloke](https://huggingface.co/TheBloke) for providing excellent GGUF conversions
-- The Llama and Llama.cpp communities for their amazing work
-
----
-
-**Note**: This is a proof of concept. Production deployments may require additional considerations like security, scalability, and error handling.
+ISC

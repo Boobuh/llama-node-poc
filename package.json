@@ -1,7 +1,7 @@
 {
   "name": "llama-node-poc",
   "version": "1.0.0",
-  "description": "Llama Node.js POC - Now refactored with TypeScript!",
+  "description": "Local LLM backend POC for Node.js with TypeScript and node-llama-cpp",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,7 +15,8 @@
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build",
     "test": "tsx src/tests/comprehensive-test.ts",
-    "test:quick": "tsx src/tests/quick-test.ts"
+    "test:quick": "tsx src/tests/quick-test.ts",
+    "generate:examples": "tsx src/tests/generate-examples.ts"
   },
   "keywords": [
     "llama",
@@ -31,11 +32,9 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@llama-node/llama-cpp": "^0.1.6",
     "chalk": "^4.1.2",
     "commander": "^14.0.1",
-    "llama-node": "^0.1.6",
-    "node-llama-cpp": "^3.13.0"
+    "node-llama-cpp": "^3.18.1"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

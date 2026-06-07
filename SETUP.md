@@ -1,132 +1,74 @@
-# 🚀 Llama Node.js POC - Setup Guide
+# Llama Node.js POC — Setup Guide
 
-## ✅ What's Been Built
+## What's in this repo
 
-Your Llama Node.js proof of concept is now complete! Here's what was created:
-
-### 📁 Project Structure
+TypeScript proof of concept for running GGUF models locally via **node-llama-cpp**.
 
 ```
 llama-node-poc/
-├── index.js                      # Main CLI application
-├── package.json                  # Project dependencies & scripts
-├── config.js                    # Configuration settings
-├── Dockerfile                    # Docker setup
-├── README.md                     # Comprehensive documentation
-├── SETUP.md                     # This setup guide
-├── models/                       # Directory for Llama models
-│   └── README.md               # Model download instructions
-└── examples/                    # Working examples
-    ├── basic-example.js        # Basic text generation
-    ├── chat-example.js         # Interactive chat
-    ├── streaming-example.js    # Real-time streaming
-    └── node-llama-cpp-example.js # Advanced implementation
+├── src/
+│   ├── index.ts                  # CLI entry point
+│   ├── config.ts                 # Model and generation settings
+│   ├── types/                    # Shared TypeScript types
+│   ├── examples/                 # basic, chat, streaming
+│   └── tests/                    # quick + comprehensive regression suite
+├── models/                       # Place your .gguf model here
+├── dist/                         # Compiled output (npm run build)
+├── Dockerfile
+└── README.md
 ```
 
-### 🎯 Features Implemented
+## Prerequisites
 
-✅ **Complete CLI Interface** - `node index.js [command]`
-✅ **Basic Text Generation** - Simple prompt → response
-✅ **Interactive Chat** - Multi-turn conversations
-✅ **Streaming Responses** - Real-time token streaming  
-✅ **Multiple Llama Packages** - llama-node & node-llama-cpp
-✅ **Docker Support** - Containerized deployment
-✅ **Comprehensive Documentation** - Setup & usage guides
-✅ **Configuration Management** - Centralized settings
+- Node.js 20+ (tested on v22)
+- ~6 GB RAM for Llama-2-7B Q4_K_M on CPU
+- A GGUF model file
 
-## 🚀 Quick Start
-
-### 1. Install Dependencies
+## Quick start
 
 ```bash
 npm install
-```
 
-### 2. Download a Llama Model (Optional for testing)
-
-```bash
 mkdir -p models
-wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O models/llama-model.gguf
+wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf \
+  -O models/llama-model.gguf
+
+npm run test:quick   # connectivity check (~10-20s)
+npm run basic        # basic generation
+npm run chat         # interactive chat
+npm run stream       # streaming demo
 ```
 
-### 3. Run Examples
+## Scripts
 
-```bash
-# Basic text generation
-npm run basic
+| Command                     | Description                                 |
+| --------------------------- | ------------------------------------------- |
+| `npm run dev -- basic`      | Basic text generation                       |
+| `npm run dev -- chat`       | Interactive chat                            |
+| `npm run dev -- stream`     | Streaming response demo                     |
+| `npm run dev -- info`       | Show config and system info                 |
+| `npm run test:quick`        | Fast connectivity test                      |
+| `npm run test`              | Full regression suite (31 tests, ~5-10 min) |
+| `npm run generate:examples` | Regenerate article example outputs          |
+| `npm run build`             | Compile TypeScript to `dist/`               |
 
-# Interactive chat
-npm run chat
+## Library choice
 
-# Streaming responses
-npm run stream
+This project uses **node-llama-cpp** (currently `^3.18.1`).
 
-# Show help
-npm run help
-```
+The older **llama-node** package (`0.1.6`, last release May 2023) is archived and no longer maintained. It is not used in this codebase.
 
-## 📋 Available Commands
+## Configuration
 
-| Command                   | Description                   |
-| ------------------------- | ----------------------------- |
-| `npm run basic`           | Basic text generation example |
-| `npm run chat`            | Interactive chat interface    |
-| `npm run stream`          | Streaming response demo       |
-| `npm run help`            | Show CLI help                 |
-| `node index.js [command]` | Direct command execution      |
+Edit `src/config.ts` for:
 
-## 🔧 Next Steps
+- model path and context length
+- CPU threads and GPU layers
+- default temperature, topP, topK, maxTokens
 
-### For Development:
+## Production next steps
 
-1. **Add a Model** - Download a GGUF model to `./models/`
-2. **Uncomment Code** - Remove comments in examples to use real models
-3. **Test Examples** - Run all examples to verify functionality
-4. **Customize Config** - Modify `config.js` for your needs
-
-### For Production:
-
-1. **Choose Package** - Decide between `llama-node` (simple) or `node-llama-cpp` (advanced)
-2. **Performance Tuning** - Adjust GPU layers, threads, batch size
-3. **Add Error Handling** - Implement robust error management
-4. **Security** - Add authentication, rate limiting, input validation
-5. **Deploy** - Use Docker for consistent deployment
-
-### For Learning:
-
-1. **Read Examples** - Study the code in `./examples/`
-2. **Experiment** - Modify prompts and parameters
-3. **Compare Packages** - Try both llama packages
-4. **Extend Features** - Add new capabilities
-
-## 💡 Recommendations
-
-### Model Selection:
-
-- **Llama-2-7B-Chat** (4GB) - Great for development & testing
-- **Llama-2-13B-Chat** (7GB) - Balanced for production use
-- **Llama-2-70B-Chat** (40GB) - Maximum quality (high resource needs)
-
-### Performance Tips:
-
-- Use `Q4_K_M` quantization for best balance
-- Enable GPU layers if available
-- Adjust context length based on use case
-- Monitor memory usage
-
-### Package Choice:
-
-- **llama-node** - Easier to use, good for prototyping
-- **node-llama-cpp** - More features, better performance
-
-## 🎉 Congratulations!
-
-You now have a complete Llama Node.js proof of concept with:
-
-- Multiple working examples
-- Professional documentation
-- Docker support
-- CLI interface
-- Comprehensive setup guides
-
-Happy coding with Llama! 🦙✨
+1. Wrap inference in a REST API (Express/Fastify)
+2. Add request validation, auth, and rate limiting
+3. Run `npm run test` in CI on every model/config change
+4. Prefer always-on containers (Fargate, VM) over cold-start serverless for multi-GB models

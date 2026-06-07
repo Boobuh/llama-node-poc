@@ -100,7 +100,7 @@ function showModelSetupInstructions(modelPath: string): void {
   console.log(chalk.gray(`mkdir -p models`));
   console.log(
     chalk.gray(
-      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguff -O ${modelPath}`
+      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${modelPath}`
     )
   );
 
@@ -139,19 +139,20 @@ export function showApiExample(): void {
   console.log(chalk.yellow("\nTypeScript API Example:"));
   console.log(
     chalk.gray(`
-import type { LlamaConfig, GenerationResult } from '../types';
+import { getLlama, LlamaChatSession } from "node-llama-cpp";
 
-const api = new Llama('./models/llama-model.gguf');
+const llama = await getLlama();
+const model = await llama.loadModel({ modelPath: "./models/llama-model.gguf" });
+const context = await model.createContext();
+const session = new LlamaChatSession({ contextSequence: context.getSequence() });
 
-const config: LlamaConfig = {
+const response = await session.prompt("Tell me about AI", {
   temperature: 0.7,
   maxTokens: 200,
   topP: 0.9,
-  topK: 40
-};
-
-const result: Promise<GenerationResult> = api.generate("Tell me about AI", config);
-console.log(result);
+  topK: 40,
+});
+console.log(response);
   `)
   );
 }
