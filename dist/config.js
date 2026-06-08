@@ -2,6 +2,11 @@
  * Configuration file for Llama Node.js POC - TypeScript version
  */
 export const appConfig = {
+    defaultProvider: "ollama",
+    ollama: {
+        host: process.env.OLLAMA_HOST ?? "http://127.0.0.1:11434",
+        model: process.env.OLLAMA_MODEL ?? "llama3.2",
+    },
     model: {
         path: "./models/llama-model.gguf",
         name: "llama-2-7B-chat",

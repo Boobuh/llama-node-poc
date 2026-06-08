@@ -1,41 +1,30 @@
 import { program } from "commander";
 import chalk from "chalk";
 import { config } from "./config";
+import { providerList } from "./providers";
 import { runBasicExample } from "./examples/basic-example";
 import { runChatExample } from "./examples/chat-example";
 import { runStreamingExample } from "./examples/streaming-example";
+function addCommonOptions(command) {
+    return command
+        .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
+        .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val, 10))
+        .option("-p, --provider <name>", "Backend: ollama | llama-node | node-llama-cpp", config.defaultProvider);
+}
 async function main() {
     console.log(chalk.blue(config.cli.welcomeMessage));
-    console.log(chalk.gray("Built with TypeScript for better type safety and developer experience\n"));
+    console.log(chalk.gray("Llama on Node.js — Ollama client, llama-node, or node-llama-cpp\n"));
     program
         .name("llama-node-poc")
-        .description("Llama Node.js Proof of Concept - TypeScript Edition")
+        .description("Llama on Node.js — multiple provider backends")
         .version("1.0.0", "-v, --version", "output the version number");
-    program
-        .command("basic")
-        .description("Run basic text generation example")
-        .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
-        .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val))
-        .action(async (options) => {
-        console.log(chalk.blue("Running basic Llama example..."));
+    addCommonOptions(program.command("basic").description("Run basic text generation example")).action(async (options) => {
         await runBasicExample(options);
     });
-    program
-        .command("chat")
-        .description("Run interactive chat example")
-        .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
-        .option("-m, --max-tokens <number>", "Maximum tokens per response", (val) => parseInt(val))
-        .action(async (options) => {
-        console.log(chalk.blue("Starting interactive chat..."));
+    addCommonOptions(program.command("chat").description("Run interactive chat example")).action(async (options) => {
         await runChatExample(options);
     });
-    program
-        .command("stream")
-        .description("Run streaming response example")
-        .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
-        .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val))
-        .action(async (options) => {
-        console.log(chalk.blue("Running streaming example..."));
+    addCommonOptions(program.command("stream").description("Run streaming response example")).action(async (options) => {
         await runStreamingExample(options);
     });
     program
@@ -44,6 +33,12 @@ async function main() {
         .action(() => {
         showSystemInfo();
     });
+    program
+        .command("providers")
+        .description("List available Llama providers for Node.js")
+        .action(() => {
+        showProviders();
+    });
     program.on("command:*", () => {
         console.error(chalk.red("Invalid command"));
         program.outputHelp();
@@ -51,14 +46,29 @@ async function main() {
     });
     await program.parseAsync();
 }
+function showProviders() {
+    console.log(chalk.yellow("Llama providers for Node.js\n"));
+    for (const p of providerList) {
+        console.log(chalk.cyan(`  ${p.id}`));
+        console.log(chalk.gray(`    ${p.description}`));
+    }
+    console.log(chalk.yellow("\nUsage:"));
+    console.log(chalk.gray("  npm run dev -- basic --provider ollama"));
+    console.log(chalk.gray("  npm run dev -- basic --provider llama-node"));
+    console.log(chalk.gray("  npm run dev -- basic --provider node-llama-cpp"));
+}
 function showSystemInfo() {
     console.log(chalk.yellow("System Information\n"));
     console.log(chalk.cyan("Environment:"));
     console.log(`  Node.js: ${process.version}`);
     console.log(`  Platform: ${process.platform}`);
     console.log(`  Architecture: ${process.arch}`);
-    console.log(chalk.cyan("\nConfiguration:"));
-    console.log(`  Model: ${config.model.name}`);
+    console.log(chalk.cyan("\nDefault provider:"), config.defaultProvider);
+    console.log(chalk.cyan("\nOllama:"));
+    console.log(`  Host: ${config.ollama.host}`);
+    console.log(`  Model: ${config.ollama.model}`);
+    console.log(chalk.cyan("\nGGUF model (llama-node / node-llama-cpp):"));
+    console.log(`  Name: ${config.model.name}`);
     console.log(`  Path: ${config.model.path}`);
     console.log(`  Context Length: ${config.model.contextLength}`);
     console.log(`  Threads: ${config.model.threads}`);
@@ -68,12 +78,7 @@ function showSystemInfo() {
     console.log(`  Max Tokens: ${config.generation.maxTokens}`);
     console.log(`  Top P: ${config.generation.topP}`);
     console.log(`  Top K: ${config.generation.topK}`);
-    console.log(chalk.cyan("\nAvailable Commands:"));
-    console.log("  basic  - Basic text generation example");
-    console.log("  chat   - Interactive chat interface");
-    console.log("  stream - Streaming response demo");
-    console.log("  info   - Show this information");
-    console.log("  help   - Show command help");
+    showProviders();
 }
 process.on("uncaughtException", (error) => {
     console.error(chalk.red("Uncaught Exception:"), error.message);

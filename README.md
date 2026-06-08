@@ -1,163 +1,106 @@
-# Llama Node.js POC — TypeScript + node-llama-cpp
+# Llama on Node.js — multi-provider POC
 
-A proof of concept for running local LLM inference in Node.js with TypeScript, CLI examples, streaming, and a regression test suite suitable for CI/CD.
+Run **Llama models from Node.js/TypeScript** using any of three backends:
 
-## Features
+| Provider             | npm package      | Needs                               | Best for                           |
+| -------------------- | ---------------- | ----------------------------------- | ---------------------------------- |
+| **ollama** (default) | `ollama`         | [Ollama](https://ollama.com) server | Pure Node.js client, easy setup    |
+| **llama-node**       | `llama-node`     | Local `.gguf` file                  | Classic Node.js in-process API     |
+| **node-llama-cpp**   | `node-llama-cpp` | Local `.gguf` file                  | Advanced in-process GGUF inference |
 
-- Basic text generation, interactive chat, and streaming responses
-- CLI via Commander.js
-- 31-test backend capability suite (`npm run test`)
-- TypeScript with ES modules
-- Docker support
-
-## Stack
-
-| Package                                                        | Version        | Role                                                    |
-| -------------------------------------------------------------- | -------------- | ------------------------------------------------------- |
-| [node-llama-cpp](https://www.npmjs.com/package/node-llama-cpp) | `^3.18.1`      | Active bindings to llama.cpp — **used by this project** |
-| [llama-node](https://www.npmjs.com/package/llama-node)         | `0.1.6` (2023) | Archived, unmaintained — **not used**                   |
-
-## Prerequisites
-
-- Node.js 20+ (tested on v22)
-- A GGUF model (~4 GB for Llama-2-7B Q4_K_M)
-- ~6 GB RAM for CPU inference
-
-## Quick start
+## Quick start — Ollama (recommended)
 
 ```bash
-git clone https://github.com/Boobuh/llama-node-poc.git
-cd llama-node-poc
 npm install
+ollama pull llama3.2
+npm run dev -- basic --provider ollama
+```
 
-mkdir -p models
+## Quick start — llama-node (GGUF file)
+
+```bash
+npm install
 wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf \
   -O models/llama-model.gguf
-
-npm run test:quick
-npm run basic
+npm run dev -- basic --provider llama-node
 ```
 
-## Usage
+## Quick start — node-llama-cpp (GGUF file)
 
 ```bash
-npm run dev -- basic     # basic generation
-npm run dev -- chat      # interactive chat
-npm run dev -- stream    # streaming demo
-npm run dev -- info      # system/config info
-npm run test:quick       # fast connectivity test
-npm run test             # full regression suite
-npm run generate:examples # regenerate article outputs
+npm run dev -- basic --provider node-llama-cpp
 ```
 
-Production build:
+## CLI
 
 ```bash
-npm run build
-npm start -- basic
+npm run dev -- providers                              # list backends
+npm run dev -- basic --provider ollama                # text generation
+npm run dev -- chat --provider llama-node             # interactive chat
+npm run dev -- stream --provider node-llama-cpp       # streaming
+npm run dev -- info                                   # config + env
 ```
 
-## Project structure
+Common flags: `--provider`, `--temperature`, `--max-tokens`
 
-```
-llama-node-poc/
-├── src/
-│   ├── index.ts
-│   ├── config.ts
-│   ├── types/
-│   ├── examples/
-│   │   ├── basic-example.ts
-│   │   ├── chat-example.ts
-│   │   └── streaming-example.ts
-│   └── tests/
-│       ├── quick-test.ts
-│       ├── comprehensive-test.ts
-│       └── generate-examples.ts
-├── models/
-├── dist/
-└── Dockerfile
-```
-
-## Code example
+## Configuration (`src/config.ts`)
 
 ```typescript
-import { getLlama, LlamaChatSession } from "node-llama-cpp";
-
-const llama = await getLlama();
-const model = await llama.loadModel({
-  modelPath: "./models/llama-model.gguf",
-});
-const context = await model.createContext();
-const session = new LlamaChatSession({
-  contextSequence: context.getSequence(),
-});
-
-const response = await session.prompt("Hello!", {
-  temperature: 0.7,
-  maxTokens: 200,
-  topP: 0.9,
-  topK: 40,
-});
-
-console.log(response);
+defaultProvider: "ollama",
+ollama: {
+  host: "http://127.0.0.1:11434",
+  model: "llama3.2",
+},
+model: {
+  path: "./models/llama-model.gguf",  // for llama-node / node-llama-cpp
+  ...
+},
 ```
 
-Streaming:
+Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`
+
+## Code examples
+
+**Ollama (Node.js client):**
 
 ```typescript
-await session.prompt("Explain quantum computing", {
-  temperature: 0.7,
-  maxTokens: 300,
-  onTextChunk: (text) => process.stdout.write(text),
+import { Ollama } from "ollama";
+const client = new Ollama({ host: "http://127.0.0.1:11434" });
+const { message } = await client.chat({
+  model: "llama3.2",
+  messages: [{ role: "user", content: "Hello!" }],
 });
 ```
 
-## Configuration
-
-Edit `src/config.ts`:
+**llama-node (in-process GGUF):**
 
 ```typescript
-export const appConfig = {
-  model: {
-    path: "./models/llama-model.gguf",
-    name: "llama-2-7B-chat",
-    contextLength: 4096,
-    threads: 4,
-    gpuLayers: -1, // -1 = all GPU layers, 0 = CPU only
-  },
-  generation: {
-    temperature: 0.7,
-    maxTokens: 200,
-    topP: 0.9,
-    topK: 40,
-  },
-};
+import { LLM } from "llama-node";
+const { LLamaCpp } = await import("llama-node/dist/llm/llama-cpp.js");
+const llm = new LLM(LLamaCpp);
+await llm.load({ modelPath: "./models/llama-model.gguf", enableLogging: false, ... });
+const result = await llm.createCompletion({ prompt: "Hello!", nThreads: 4, nTokPredict: 100 }, () => {});
 ```
 
-## Recommended models
+**Unified provider in this repo:**
 
-| Model                           | Size     | Notes                           |
-| ------------------------------- | -------- | ------------------------------- |
-| Llama-2-7B-Chat Q4_K_M          | ~4 GB    | Default for development         |
-| Llama-3.x / Qwen / Mistral GGUF | varies   | Supported by node-llama-cpp 3.x |
-| Q4_K_M                          | balanced | Good default quantization       |
-| Q8_0                            | larger   | Higher quality                  |
+```typescript
+import { getProvider } from "./providers";
+const session = await getProvider("ollama").createSession();
+const text = await session.prompt("Hello!");
+```
 
-GGUF sources: [Hugging Face GGUF models](https://huggingface.co/models?library=gguf), quantizers such as [bartowski](https://huggingface.co/bartowski).
+## Tests
 
-## Testing
+```bash
+npm run test:providers   # all 3 providers (needs Ollama + GGUF model)
+npm run test:quick       # node-llama-cpp connectivity
+npm run test             # full 31-test regression suite
+```
 
-- `npm run test:quick` — loads model and checks a single response (~10-20s)
-- `npm run test` — 31 regression tests across instruction following, JSON output, context retention, latency, and more (~5-10 min)
+Ollama for tests: install from https://ollama.com, then `ollama pull tinyllama` and `OLLAMA_MODEL=tinyllama npm run test:providers`.
 
-Determinism tests may fail on some models/hardware; that is expected for small local models.
-
-## Troubleshooting
-
-- **Model not found** — place a `.gguf` file in `./models/`
-- **Out of memory** — use a smaller quantization (Q4_K_M or Q2_K)
-- **Slow inference** — enable GPU layers or reduce context length
-- **Tokenizer warning** — `special_eos_id` warnings from older Llama-2 GGUF files are usually harmless
+`gpuLayers: 0` in config uses CPU (recommended if Vulkan/GPU runs out of memory).
 
 ## License
 

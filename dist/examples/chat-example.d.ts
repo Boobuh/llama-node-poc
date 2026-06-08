@@ -1,5 +1,3 @@
-export declare function runChatExample(options?: {
-    temperature?: number;
-    maxTokens?: number;
-}): Promise<void>;
+import { type ExampleOptions } from "./shared";
+export declare function runChatExample(options?: ExampleOptions): Promise<void>;
 //# sourceMappingURL=chat-example.d.ts.map

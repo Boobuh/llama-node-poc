@@ -1,14 +1,14 @@
 import chalk from "chalk";
 
-// Currently disabled to avoid dependency conflicts
-
 export function showNodeLlamaCppInfo(): void {
-  console.log(chalk.yellow("📦 Node-llama-cpp Example"));
-  console.log(chalk.gray("This example requires the node-llama-cpp package"));
-  console.log(chalk.gray("Install with: npm install node-llama-cpp"));
-  console.log(chalk.cyan("\nFeatures:"));
-  console.log(chalk.gray("• Advanced model management"));
-  console.log(chalk.gray("• GPU acceleration support"));
-  console.log(chalk.gray("• Custom tokenization"));
-  console.log(chalk.gray("• Performance optimizations"));
+  console.log(chalk.yellow("Providers"));
+  console.log(chalk.gray("Use --provider on any command:"));
+  console.log(chalk.cyan("\n  ollama"));
+  console.log(chalk.gray("    npm package `ollama` → Ollama server"));
+  console.log(chalk.cyan("\n  llama-node"));
+  console.log(chalk.gray("    npm package `llama-node` + local GGUF"));
+  console.log(chalk.cyan("\n  node-llama-cpp"));
+  console.log(chalk.gray("    npm package `node-llama-cpp` + local GGUF"));
+  console.log(chalk.yellow("\nExample:"));
+  console.log(chalk.gray("  npm run dev -- basic --provider ollama"));
 }

@@ -4,13 +4,20 @@ import type { AppConfig } from "./types";
  * Configuration file for Llama Node.js POC - TypeScript version
  */
 export const appConfig: AppConfig = {
+  defaultProvider: "ollama",
+
+  ollama: {
+    host: process.env.OLLAMA_HOST ?? "http://127.0.0.1:11434",
+    model: process.env.OLLAMA_MODEL ?? "llama3.2",
+  },
+
   model: {
     path: "./models/llama-model.gguf",
     name: "llama-2-7B-chat",
     contextLength: 4096,
     batchSize: 512,
     threads: 4,
-    gpuLayers: -1, // -1 for all GPU layers, 0 for CPU only
+    gpuLayers: 0, // 0 = CPU only (stable); -1 = all GPU layers if VRAM allows
   },
 
   generation: {

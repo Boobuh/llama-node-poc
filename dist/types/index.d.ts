@@ -43,7 +43,14 @@ export interface CliConfig {
     welcomeMessage: string;
     exitCommands: string[];
 }
+export interface OllamaConfig {
+    host: string;
+    model: string;
+}
+export type DefaultProvider = "ollama" | "llama-node" | "node-llama-cpp";
 export interface AppConfig {
+    defaultProvider: DefaultProvider;
+    ollama: OllamaConfig;
     model: ModelConfig;
     generation: GenerationConfig;
     prompts: PromptsConfig;

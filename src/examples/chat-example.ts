@@ -1,8 +1,16 @@
 import * as readline from "readline";
 import chalk from "chalk";
-import fs from "node:fs";
 import { config } from "../config";
-import type { LlamaConfig, LlamaError } from "../types";
+import { getProvider } from "../providers";
+import type { LlamaSession } from "../providers";
+import type { LlamaConfig } from "../types";
+import {
+  buildGenerationConfig,
+  handleExampleError,
+  printGenerationConfig,
+  resolveProviderId,
+  type ExampleOptions,
+} from "./shared";
 
 interface ReadLineInterface {
   question(query: string, callback: (answer: string) => void): void;
@@ -10,45 +18,23 @@ interface ReadLineInterface {
 }
 
 export async function runChatExample(
-  options: { temperature?: number; maxTokens?: number } = {}
+  options: ExampleOptions = {}
 ): Promise<void> {
+  const providerId = resolveProviderId(options.provider);
+  const provider = getProvider(providerId);
+  const generationConfig = buildGenerationConfig(options);
+
   try {
-    console.log(chalk.yellow("Interactive Llama Chat Example (TypeScript)\n"));
+    console.log(chalk.yellow(`Interactive Llama Chat (${provider.label})\n`));
+    printGenerationConfig(providerId, generationConfig);
 
-    const modelPath: string = config.model.path;
-
-    const generationConfig: LlamaConfig = {
-      temperature: options.temperature ?? config.generation.temperature,
-      maxTokens: options.maxTokens ?? config.generation.maxTokens,
-      topP: config.generation.topP,
-      topK: config.generation.topK,
-    };
-
-    console.log(chalk.cyan("Configuration:"));
-    console.log(chalk.gray(`  Model: ${config.model.name}`));
-    console.log(chalk.gray(`  Temperature: ${generationConfig.temperature}`));
-    console.log(chalk.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
-
-    const modelExists = fs.existsSync(modelPath);
-
-    if (!modelExists) {
-      showModelSetupInstructions(modelPath);
+    if (!(await provider.isAvailable())) {
+      console.log(chalk.yellow("\n" + provider.getSetupInstructions()));
       return;
     }
 
-    console.log(chalk.blue("\nLoading model..."));
-    const nodeLlamaCpp = await import("node-llama-cpp");
-    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
-
-    const llama = await getLlama();
-    const model = await llama.loadModel({
-      modelPath: modelPath,
-    });
-
-    const context = await model.createContext();
-    const session = new LlamaChatSession({
-      contextSequence: context.getSequence(),
-    });
+    console.log(chalk.blue("\nConnecting..."));
+    const session = await provider.createSession();
 
     console.log(chalk.green("\nChat initialized!"));
     console.log(chalk.gray("Type 'exit', 'quit', or 'q' to end."));
@@ -60,17 +46,16 @@ export async function runChatExample(
     }) as ReadLineInterface;
 
     await startChatLoop(rl, session, generationConfig);
-
     rl.close();
   } catch (error: unknown) {
-    handleError(error as LlamaError, "chat example");
+    handleExampleError(error, "chat example");
   }
 }
 
 async function startChatLoop(
   rl: ReadLineInterface,
-  session: any,
-  config: LlamaConfig
+  session: LlamaSession,
+  generationConfig: LlamaConfig
 ): Promise<void> {
   const askQuestion = (): void => {
     rl.question(chalk.blue("You: "), async (userInput: string) => {
@@ -88,12 +73,7 @@ async function startChatLoop(
 
       try {
         const startTime = Date.now();
-        const response = await session.prompt(userInput, {
-          temperature: config.temperature ?? 0.7,
-          topP: config.topP ?? 0.9,
-          topK: config.topK ?? 40,
-          maxTokens: config.maxTokens ?? 200,
-        });
+        const response = await session.prompt(userInput, generationConfig);
         const endTime = Date.now();
 
         console.log(
@@ -112,50 +92,5 @@ async function startChatLoop(
 }
 
 function isExitCommand(input: string): boolean {
-  const normalizedInput = input.toLowerCase().trim();
-  return config.cli.exitCommands.includes(normalizedInput);
-}
-
-function showModelSetupInstructions(modelPath: string): void {
-  console.log(chalk.yellow("\nModel Setup Instructions:"));
-  console.log(chalk.white("1. Download a Llama model in GGUF format"));
-  console.log(chalk.white("2. Place it in the ./models/ directory"));
-  console.log(chalk.white("3. Run the chat example again"));
-
-  console.log(chalk.yellow("\nExample Setup:"));
-  console.log(chalk.gray(`mkdir -p models`));
-  console.log(
-    chalk.gray(
-      `wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ${modelPath}`
-    )
-  );
-
-  console.log(chalk.yellow("\nRun Chat:"));
-  console.log(chalk.gray("npm run chat"));
-}
-
-function handleError(error: LlamaError, context: string): void {
-  console.error(chalk.red(`Error in ${context}:`));
-
-  if (error instanceof Error) {
-    console.error(chalk.red("  Message:"), error.message);
-
-    if (error.code) {
-      console.error(chalk.red("  Code:"), error.code);
-    }
-
-    if (error.details) {
-      console.error(
-        chalk.red("  Details:"),
-        JSON.stringify(error.details, null, 2)
-      );
-    }
-  } else {
-    console.error(chalk.red("  Unexpected error:"), error);
-  }
-
-  console.log(chalk.yellow("\nTroubleshooting:"));
-  console.log(chalk.gray("• Check model file exists"));
-  console.log(chalk.gray("• Verify Node.js compatibility"));
-  console.log(chalk.gray("• Check system memory"));
+  return config.cli.exitCommands.includes(input.toLowerCase().trim());
 }
