@@ -1,6 +1,3 @@
-import type { LlamaProviderId, LlamaSession, PromptOptions, ProviderAdapter } from "./types";
-export type { LlamaProviderId, LlamaSession, PromptOptions, ProviderAdapter };
-export declare const providerList: ProviderAdapter[];
-export declare function getProvider(id: LlamaProviderId): ProviderAdapter;
-export declare function parseProvider(value?: string): LlamaProviderId;
+export { getProvider, parseProvider, providerList, providerRegistry, } from "./registry";
+export type { LlamaProviderId, LlamaSession, PromptOptions, ProviderAdapter, } from "../types/providers";
 //# sourceMappingURL=index.d.ts.map

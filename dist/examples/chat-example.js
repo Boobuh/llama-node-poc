@@ -2,6 +2,7 @@ import * as readline from "readline";
 import chalk from "chalk";
 import { config } from "../config";
 import { getProvider } from "../providers";
+import { isExitCommand } from "../utils/exit-command";
 import { buildGenerationConfig, handleExampleError, printGenerationConfig, resolveProviderId, } from "./shared";
 export async function runChatExample(options = {}) {
     const providerId = resolveProviderId(options.provider);
@@ -33,7 +34,7 @@ export async function runChatExample(options = {}) {
 async function startChatLoop(rl, session, generationConfig) {
     const askQuestion = () => {
         rl.question(chalk.blue("You: "), async (userInput) => {
-            if (isExitCommand(userInput)) {
+            if (isExitCommand(userInput, config.cli.exitCommands)) {
                 console.log(chalk.yellow("\nGoodbye! Chat session ended."));
                 return;
             }
@@ -55,8 +56,5 @@ async function startChatLoop(rl, session, generationConfig) {
         });
     };
     askQuestion();
-}
-function isExitCommand(input) {
-    return config.cli.exitCommands.includes(input.toLowerCase().trim());
 }
 //# sourceMappingURL=chat-example.js.map

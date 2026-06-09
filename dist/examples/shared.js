@@ -1,6 +1,8 @@
 import chalk from "chalk";
+import { EXAMPLE_PROVIDER_HELP_LINES } from "../constants";
 import { config } from "../config";
 import { getProvider, parseProvider } from "../providers";
+import { LlamaError } from "../types/errors";
 export function resolveProviderId(provider) {
     return parseProvider(provider ?? config.defaultProvider);
 }
@@ -27,20 +29,19 @@ export function printGenerationConfig(providerId, generationConfig) {
     console.log(chalk.gray(`  Max Tokens: ${generationConfig.maxTokens}`));
 }
 export function handleExampleError(error, context) {
-    const llamaError = error;
     console.error(chalk.red(`Error in ${context}:`));
-    if (llamaError instanceof Error) {
-        console.error(chalk.red("  Message:"), llamaError.message);
-        if (llamaError.code) {
-            console.error(chalk.red("  Code:"), llamaError.code);
+    if (error instanceof LlamaError || error instanceof Error) {
+        console.error(chalk.red("  Message:"), error.message);
+        if (error instanceof LlamaError && error.code) {
+            console.error(chalk.red("  Code:"), error.code);
         }
     }
     else {
         console.error(chalk.red("  Unexpected error:"), error);
     }
     console.log(chalk.yellow("\nProviders:"));
-    console.log(chalk.gray("  --provider ollama          (Ollama server + npm ollama)"));
-    console.log(chalk.gray("  --provider llama-node      (llama-node + GGUF file)"));
-    console.log(chalk.gray("  --provider node-llama-cpp (node-llama-cpp + GGUF file)"));
+    for (const line of EXAMPLE_PROVIDER_HELP_LINES) {
+        console.log(chalk.gray(`  ${line}`));
+    }
 }
 //# sourceMappingURL=shared.js.map

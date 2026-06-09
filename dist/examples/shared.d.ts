@@ -1,10 +1,7 @@
-import { type LlamaProviderId } from "../providers";
+import type { ExampleOptions } from "../types/cli";
 import type { LlamaConfig } from "../types";
-export interface ExampleOptions {
-    temperature?: number;
-    maxTokens?: number;
-    provider?: string;
-}
+import type { LlamaProviderId } from "../types/providers";
+export type { ExampleOptions };
 export declare function resolveProviderId(provider?: string): LlamaProviderId;
 export declare function buildGenerationConfig(options: ExampleOptions): LlamaConfig;
 export declare function printGenerationConfig(providerId: LlamaProviderId, generationConfig: LlamaConfig): void;

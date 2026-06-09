@@ -1,13 +1,14 @@
 import { Ollama } from "ollama";
 import { config } from "../config";
+import { resolvePromptOptions } from "./resolve-prompt-options";
+import { getOllamaSetupInstructions, getOllamaUnreachableMessage, } from "./setup-messages";
 class OllamaSession {
     constructor(client, model) {
         this.client = client;
         this.model = model;
     }
     async prompt(text, options = {}) {
-        const temperature = options.temperature ?? config.generation.temperature;
-        const maxTokens = options.maxTokens ?? config.generation.maxTokens;
+        const resolved = resolvePromptOptions(options, config.generation);
         if (options.onTextChunk) {
             let full = "";
             const stream = await this.client.chat({
@@ -15,10 +16,10 @@ class OllamaSession {
                 messages: [{ role: "user", content: text }],
                 stream: true,
                 options: {
-                    temperature,
-                    num_predict: maxTokens,
-                    top_p: options.topP ?? config.generation.topP,
-                    top_k: options.topK ?? config.generation.topK,
+                    temperature: resolved.temperature,
+                    num_predict: resolved.maxTokens,
+                    top_p: resolved.topP,
+                    top_k: resolved.topK,
                 },
             });
             for await (const chunk of stream) {
@@ -34,10 +35,10 @@ class OllamaSession {
             model: this.model,
             messages: [{ role: "user", content: text }],
             options: {
-                temperature,
-                num_predict: maxTokens,
-                top_p: options.topP ?? config.generation.topP,
-                top_k: options.topK ?? config.generation.topK,
+                temperature: resolved.temperature,
+                num_predict: resolved.maxTokens,
+                top_p: resolved.topP,
+                top_k: resolved.topK,
             },
         });
         return response.message.content;
@@ -57,22 +58,14 @@ export const ollamaProvider = {
             return false;
         }
     },
-    getSetupInstructions() {
-        return [
-            "Ollama setup:",
-            "  1. Install Ollama: https://ollama.com",
-            `  2. Pull a model: ollama pull ${config.ollama.model}`,
-            "  3. Ensure server is running: ollama serve",
-            `  4. Run: npm run dev -- basic --provider ollama`,
-        ].join("\n");
-    },
+    getSetupInstructions: getOllamaSetupInstructions,
     async createSession() {
         const client = new Ollama({ host: config.ollama.host });
         try {
             await client.list();
         }
         catch {
-            throw new Error(`Cannot reach Ollama at ${config.ollama.host}. Start with: ollama serve`);
+            throw new Error(getOllamaUnreachableMessage());
         }
         return new OllamaSession(client, config.ollama.model);
     },

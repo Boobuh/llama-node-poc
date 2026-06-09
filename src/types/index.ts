@@ -1,134 +1,23 @@
-/**
- * TypeScript type definitions for Llama Node.js POC
- */
-
-export interface LlamaConfig {
-  temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  topK?: number;
-  repeatPenalty?: number;
-  stream?: boolean;
-  context?: ChatMessage[];
-}
-
-export interface ChatMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
-
-export interface GenerationResult {
-  text: string;
-  tokens?: number;
-  finishReason?: "stop" | "length" | "error";
-}
-
-export interface ModelConfig {
-  path: string;
-  name: string;
-  contextLength: number;
-  batchSize: number;
-  threads: number;
-  gpuLayers: number;
-}
-
-export interface GenerationConfig {
-  temperature: number;
-  maxTokens: number;
-  topP: number;
-  topK: number;
-  repeatPenalty: number;
-}
-
-export interface PromptsConfig {
-  basic: string;
-  chat: string;
-  stream: string;
-}
-
-export interface CliConfig {
-  welcomeMessage: string;
-  exitCommands: string[];
-}
-
-export interface OllamaConfig {
-  host: string;
-  model: string;
-}
-
-export type DefaultProvider = "ollama" | "llama-node" | "node-llama-cpp";
-
-export interface AppConfig {
-  defaultProvider: DefaultProvider;
-  ollama: OllamaConfig;
-  model: ModelConfig;
-  generation: GenerationConfig;
-  prompts: PromptsConfig;
-  cli: CliConfig;
-}
-
-export interface CommandArgs {
-  command?: string;
-  prompt?: string;
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  help?: boolean;
-  version?: boolean;
-}
-
-export interface LlamaApiInterface {
-  generate(prompt: string, config?: LlamaConfig): Promise<GenerationResult>;
-}
-
-export interface StreamCallback {
-  (token: string): void;
-}
-
-export interface LlamaStreamConfig extends LlamaConfig {
-  callback?: StreamCallback;
-}
-
-export interface CommandHandler {
-  (args?: CommandArgs): Promise<void>;
-}
-
-export interface ExampleFunction {
-  (): Promise<void>;
-}
-
-export class LlamaError extends Error {
-  public code: string | undefined;
-  public details: unknown;
-
-  constructor(message: string, code?: string, details?: unknown) {
-    super(message);
-    this.name = "LlamaError";
-    this.code = code;
-    this.details = details;
-  }
-}
-
-export type LogLevel = "debug" | "info" | "warn" | "error";
-
-export type ModelSize = "7B" | "13B" | "70B";
-
-export type Quality = "Good" | "Better" | "Best";
-
-export type Speed = "Fast" | "Medium" | "Slow";
-
-export type UseCase =
-  | "Development & Testing"
-  | "Production Use"
-  | "High-Quality Applications";
-
-export interface ModelInfo {
-  name: string;
-  size: string;
-  quality: Quality;
-  speed: Speed;
-  useCase: UseCase;
-  sizeGB: number;
-}
-
-export * from "./index";
+export type { LlamaProviderId, PromptOptions, LlamaSession, ProviderAdapter } from "./providers";
+export type {
+  AppConfig,
+  ChatMessage,
+  GenerationConfig,
+  GenerationResult,
+  InstructionFollowingResult,
+  LlamaConfig,
+  LlamaStreamConfig,
+  ModelConfig,
+  ModelRecommendationUseCase,
+  OllamaConfig,
+  ParsedPersonJson,
+  PromptsConfig,
+  CliConfig,
+  StreamCallback,
+  StructuredJsonResult,
+} from "./config";
+export type { CommandOptions, ExampleOptions, ReadLineInterface } from "./cli";
+export type { TestResult, TestSuite, PassRateLevel, PassRateSummary } from "./test";
+export type { ArticleExample, ArticleExampleDefinition } from "./examples";
+export type { LlamaNodeLlm, LlamaNodeLoadParams } from "./llama-node";
+export { LlamaError } from "./errors";

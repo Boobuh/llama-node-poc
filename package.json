@@ -1,7 +1,7 @@
 {
   "name": "llama-node-poc",
   "version": "1.0.0",
-  "description": "Llama on Node.js — Ollama, llama-node, and node-llama-cpp providers",
+  "description": "Llama on Node.js — Ollama and llama-node providers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -16,6 +16,7 @@
     "rebuild": "npm run clean && npm run build",
     "test": "tsx src/tests/comprehensive-test.ts",
     "test:quick": "tsx src/tests/quick-test.ts",
+    "test:unit": "node --import tsx --test 'src/**/*.test.ts'",
     "test:providers": "tsx src/tests/providers-test.ts",
     "generate:examples": "tsx src/tests/generate-examples.ts"
   },
@@ -37,7 +38,6 @@
     "chalk": "^4.1.2",
     "commander": "^14.0.1",
     "llama-node": "^0.1.6",
-    "node-llama-cpp": "^3.18.1",
     "ollama": "^0.6.3"
   },
   "devDependencies": {

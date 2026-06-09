@@ -1,33 +1,28 @@
 import chalk from "chalk";
+import { QUICK_TEST_MAX_TOKENS, QUICK_TEST_PROMPT, QUICK_TEST_TEMPERATURE, } from "../constants";
 import { config } from "../config";
-import fs from "node:fs";
+import { getProvider, parseProvider } from "../providers";
+import { prepareTestProvider } from "./helpers/setup-test-provider";
 async function quickTest() {
     console.log(chalk.blue("\nQuick Connectivity Test\n"));
-    const modelPath = config.model.path;
-    if (!fs.existsSync(modelPath)) {
-        console.log(chalk.red("Model file not found!"));
-        console.log(chalk.yellow(`\nModel Path: ${modelPath}`));
-        console.log(chalk.gray("\nPlease download a model first."));
+    const providerId = parseProvider(process.env.PROVIDER ?? config.defaultProvider);
+    const provider = getProvider(providerId);
+    prepareTestProvider(providerId);
+    console.log(chalk.gray(`Provider: ${provider.label}\n`));
+    if (!(await provider.isAvailable())) {
+        console.log(chalk.red("Provider not available."));
+        console.log(chalk.yellow(provider.getSetupInstructions()));
         process.exit(1);
     }
     try {
-        console.log(chalk.green("Loading model..."));
-        const nodeLlamaCpp = await import("node-llama-cpp");
-        const { getLlama, LlamaChatSession } = nodeLlamaCpp;
-        const llama = await getLlama();
-        const model = await llama.loadModel({
-            modelPath: modelPath,
-        });
-        const context = await model.createContext();
-        const session = new LlamaChatSession({
-            contextSequence: context.getSequence(),
-        });
-        console.log(chalk.green("Model loaded!\n"));
+        console.log(chalk.green("Connecting..."));
+        const session = await provider.createSession();
+        console.log(chalk.green("Ready!\n"));
         console.log(chalk.cyan("Testing basic response..."));
         const startTime = Date.now();
-        const response = await session.prompt("Say 'Hello, World!' in one sentence.", {
-            temperature: 0.7,
-            maxTokens: 50,
+        const response = await session.prompt(QUICK_TEST_PROMPT, {
+            temperature: QUICK_TEST_TEMPERATURE,
+            maxTokens: QUICK_TEST_MAX_TOKENS,
         });
         const duration = Date.now() - startTime;
         console.log(chalk.green("\nResponse received:"));
@@ -39,11 +34,13 @@ async function quickTest() {
         }
         else {
             console.log(chalk.red("\nEmpty response received"));
+            process.exit(1);
         }
     }
     catch (error) {
-        console.error(chalk.red("\nTest failed:"), error.message);
-        if (error.stack) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(chalk.red("\nTest failed:"), message);
+        if (error instanceof Error && error.stack) {
             console.error(chalk.gray(error.stack));
         }
         process.exit(1);

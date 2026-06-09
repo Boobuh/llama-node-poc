@@ -6,8 +6,8 @@ Place Llama (or other) model files in **GGUF** format here.
 
 | Model                           | Size   | Notes                           |
 | ------------------------------- | ------ | ------------------------------- |
-| Llama-2-7B-Chat Q4_K_M          | ~4 GB  | Default for this POC            |
-| Llama-3.x / Qwen / Mistral GGUF | varies | Supported by node-llama-cpp 3.x |
+| Llama-2-7B-Chat Q4_K_M          | ~4 GB  | Default for llama-node POC      |
+| Llama-3.x / Qwen / Mistral GGUF | varies | Use Ollama for modern GGUF      |
 
 ## Sources
 

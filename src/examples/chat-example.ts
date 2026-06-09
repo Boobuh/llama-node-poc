@@ -2,8 +2,10 @@ import * as readline from "readline";
 import chalk from "chalk";
 import { config } from "../config";
 import { getProvider } from "../providers";
-import type { LlamaSession } from "../providers";
+import type { LlamaSession } from "../types/providers";
 import type { LlamaConfig } from "../types";
+import type { ReadLineInterface } from "../types/cli";
+import { isExitCommand } from "../utils/exit-command";
 import {
   buildGenerationConfig,
   handleExampleError,
@@ -11,11 +13,6 @@ import {
   resolveProviderId,
   type ExampleOptions,
 } from "./shared";
-
-interface ReadLineInterface {
-  question(query: string, callback: (answer: string) => void): void;
-  close(): void;
-}
 
 export async function runChatExample(
   options: ExampleOptions = {}
@@ -59,7 +56,7 @@ async function startChatLoop(
 ): Promise<void> {
   const askQuestion = (): void => {
     rl.question(chalk.blue("You: "), async (userInput: string) => {
-      if (isExitCommand(userInput)) {
+      if (isExitCommand(userInput, config.cli.exitCommands)) {
         console.log(chalk.yellow("\nGoodbye! Chat session ended."));
         return;
       }
@@ -89,8 +86,4 @@ async function startChatLoop(
   };
 
   askQuestion();
-}
-
-function isExitCommand(input: string): boolean {
-  return config.cli.exitCommands.includes(input.toLowerCase().trim());
 }

@@ -1,21 +1,19 @@
 import chalk from "chalk";
+import { EXAMPLE_PROVIDER_HELP_LINES } from "../constants";
 import { config } from "../config";
-import { getProvider, parseProvider, type LlamaProviderId } from "../providers";
-import type { LlamaConfig, LlamaError } from "../types";
+import { getProvider, parseProvider } from "../providers";
+import type { ExampleOptions } from "../types/cli";
+import type { LlamaConfig } from "../types";
+import type { LlamaProviderId } from "../types/providers";
+import { LlamaError } from "../types/errors";
 
-export interface ExampleOptions {
-  temperature?: number;
-  maxTokens?: number;
-  provider?: string;
-}
+export type { ExampleOptions };
 
 export function resolveProviderId(provider?: string): LlamaProviderId {
   return parseProvider(provider ?? config.defaultProvider);
 }
 
-export function buildGenerationConfig(
-  options: ExampleOptions
-): LlamaConfig {
+export function buildGenerationConfig(options: ExampleOptions): LlamaConfig {
   return {
     temperature: options.temperature ?? config.generation.temperature,
     maxTokens: options.maxTokens ?? config.generation.maxTokens,
@@ -42,20 +40,19 @@ export function printGenerationConfig(
 }
 
 export function handleExampleError(error: unknown, context: string): void {
-  const llamaError = error as LlamaError;
   console.error(chalk.red(`Error in ${context}:`));
 
-  if (llamaError instanceof Error) {
-    console.error(chalk.red("  Message:"), llamaError.message);
-    if (llamaError.code) {
-      console.error(chalk.red("  Code:"), llamaError.code);
+  if (error instanceof LlamaError || error instanceof Error) {
+    console.error(chalk.red("  Message:"), error.message);
+    if (error instanceof LlamaError && error.code) {
+      console.error(chalk.red("  Code:"), error.code);
     }
   } else {
     console.error(chalk.red("  Unexpected error:"), error);
   }
 
   console.log(chalk.yellow("\nProviders:"));
-  console.log(chalk.gray("  --provider ollama          (Ollama server + npm ollama)"));
-  console.log(chalk.gray("  --provider llama-node      (llama-node + GGUF file)"));
-  console.log(chalk.gray("  --provider node-llama-cpp (node-llama-cpp + GGUF file)"));
+  for (const line of EXAMPLE_PROVIDER_HELP_LINES) {
+    console.log(chalk.gray(`  ${line}`));
+  }
 }

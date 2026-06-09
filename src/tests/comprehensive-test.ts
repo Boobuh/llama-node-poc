@@ -1,58 +1,46 @@
 import chalk from "chalk";
-import fs from "node:fs";
+import { TEST_THRESHOLDS } from "../constants";
 import { config } from "../config";
-
-interface TestResult {
-  name: string;
-  passed: boolean;
-  message: string;
-  duration?: number;
-  error?: string;
-}
-
-interface TestSuite {
-  name: string;
-  tests: TestResult[];
-}
+import { getProvider, parseProvider, type LlamaSession } from "../providers";
+import type { TestSuite } from "../types";
+import { checkInstructionFollowing } from "../utils/assertions";
+import {
+  parsePersonJson,
+  responseContainsApiKey,
+  responsesAreIdentical,
+} from "../utils/json-assertions";
+import {
+  countSentences,
+  countWords,
+  normalizeResponse,
+} from "../utils/response";
+import { prepareTestProvider } from "./helpers/setup-test-provider";
+import { printSuiteResults, printTestSummary } from "./helpers/reporting";
 
 const testResults: TestSuite[] = [];
 
 async function runComprehensiveTests(): Promise<void> {
-  console.log(chalk.blue("\nStarting Comprehensive Llama-Node Test Suite\n"));
+  console.log(chalk.blue("\nStarting Comprehensive Llama on Node.js Test Suite\n"));
   console.log(chalk.gray("=".repeat(60)));
 
-  const modelPath: string = config.model.path;
+  const providerId = parseProvider(process.env.PROVIDER ?? config.defaultProvider);
+  const provider = getProvider(providerId);
 
-  if (!fs.existsSync(modelPath)) {
-    console.log(chalk.red("\nModel file not found!"));
-    console.log(chalk.yellow(`\nModel Path: ${modelPath}`));
-    console.log(chalk.gray("Please download a model first."));
-    console.log(chalk.cyan("\nQuick Setup:"));
-    console.log(chalk.gray("mkdir -p models"));
-    console.log(
-      chalk.gray(
-        "wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf -O ./models/llama-model.gguf"
-      )
-    );
+  prepareTestProvider(providerId);
+
+  console.log(chalk.gray(`Provider: ${provider.label}\n`));
+
+  if (!(await provider.isAvailable())) {
+    console.log(chalk.red(`\nProvider "${providerId}" not available.`));
+    console.log(chalk.yellow(provider.getSetupInstructions()));
     process.exit(1);
   }
 
   try {
-    console.log(chalk.green("\nLoading Llama model..."));
-    const nodeLlamaCpp = await import("node-llama-cpp");
-    const { getLlama, LlamaChatSession } = nodeLlamaCpp;
+    console.log(chalk.green("\nStarting session..."));
+    const session = await provider.createSession();
 
-    const llama = await getLlama();
-    const model = await llama.loadModel({
-      modelPath: modelPath,
-    });
-
-    const context = await model.createContext();
-    const session = new LlamaChatSession({
-      contextSequence: context.getSequence(),
-    });
-
-    console.log(chalk.green("Model loaded successfully!\n"));
+    console.log(chalk.green("Session ready!\n"));
 
     await testBasicConnectivity(session);
     await testTemperatureControl(session);
@@ -71,14 +59,14 @@ async function runComprehensiveTests(): Promise<void> {
     await testLatencyMetrics(session);
     await testContextWindowBoundary(session);
 
-    printTestSummary();
+    printTestSummary(testResults);
   } catch (error) {
     console.error(chalk.red("\nFatal Error:"), error);
     process.exit(1);
   }
 }
 
-async function testBasicConnectivity(session: any): Promise<void> {
+async function testBasicConnectivity(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Basic Connectivity", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Basic Connectivity"));
@@ -91,8 +79,7 @@ async function testBasicConnectivity(session: any): Promise<void> {
     });
 
     const duration = Date.now() - startTime;
-    const responseText =
-      typeof response === "string" ? response : String(response);
+    const responseText = normalizeResponse(response);
 
     suite.tests.push(
       {
@@ -103,7 +90,7 @@ async function testBasicConnectivity(session: any): Promise<void> {
       },
       {
         name: "Response time < 30s",
-        passed: duration < 30000,
+        passed: duration < TEST_THRESHOLDS.responseTimeMs,
         message: `Generated in ${duration}ms`,
         duration,
       }
@@ -121,7 +108,7 @@ async function testBasicConnectivity(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testTemperatureControl(session: any): Promise<void> {
+async function testTemperatureControl(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Temperature Control", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Temperature Control"));
@@ -139,14 +126,8 @@ async function testTemperatureControl(session: any): Promise<void> {
       maxTokens: 100,
     });
 
-    const lowText =
-      typeof lowTempResponse === "string"
-        ? lowTempResponse
-        : String(lowTempResponse);
-    const highText =
-      typeof highTempResponse === "string"
-        ? highTempResponse
-        : String(highTempResponse);
+    const lowText = normalizeResponse(lowTempResponse);
+    const highText = normalizeResponse(highTempResponse);
 
     const responsesDiffer = lowText !== highText;
     suite.tests.push(
@@ -181,7 +162,7 @@ async function testTemperatureControl(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testTokenLimits(session: any): Promise<void> {
+async function testTokenLimits(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Token Limits", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Token Limits"));
@@ -194,19 +175,20 @@ async function testTokenLimits(session: any): Promise<void> {
       topK: config.generation.topK,
     });
 
-    const responseText =
-      typeof response === "string" ? response : String(response);
-    const wordCount = responseText.split(/\s+/).length;
+    const responseText = normalizeResponse(response);
+    const wordCount = countWords(responseText);
 
     suite.tests.push(
       {
         name: "Respects maxTokens limit",
-        passed: wordCount <= 15,
+        passed: wordCount <= TEST_THRESHOLDS.maxTokensWordBuffer,
         message: `Generated ${wordCount} words (maxTokens: 10)`,
       },
       {
         name: "Response within bounds",
-        passed: responseText.length > 0 && responseText.length < 500,
+        passed:
+          responseText.length > 0 &&
+          responseText.length < TEST_THRESHOLDS.maxResponseChars,
         message: `Response length: ${responseText.length} chars`,
       }
     );
@@ -223,7 +205,7 @@ async function testTokenLimits(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testStreamingOutput(session: any): Promise<void> {
+async function testStreamingOutput(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Streaming Output", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Streaming Output"));
@@ -275,7 +257,7 @@ async function testStreamingOutput(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testLanguageUnderstanding(session: any): Promise<void> {
+async function testLanguageUnderstanding(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Language Understanding", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Language Understanding"));
@@ -299,7 +281,7 @@ async function testLanguageUnderstanding(session: any): Promise<void> {
       });
 
       const responseText = (
-        typeof response === "string" ? response : String(response)
+        normalizeResponse(response)
       ).toLowerCase();
 
       suite.tests.push({
@@ -321,7 +303,7 @@ async function testLanguageUnderstanding(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testReasoning(session: any): Promise<void> {
+async function testReasoning(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Step-by-Step Reasoning", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Reasoning"));
@@ -336,7 +318,7 @@ async function testReasoning(session: any): Promise<void> {
     });
 
     const responseText = (
-      typeof response === "string" ? response : String(response)
+      normalizeResponse(response)
     ).toLowerCase();
 
     suite.tests.push({
@@ -360,7 +342,7 @@ async function testReasoning(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testCodeGeneration(session: any): Promise<void> {
+async function testCodeGeneration(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Code Generation", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Code Generation"));
@@ -375,7 +357,7 @@ async function testCodeGeneration(session: any): Promise<void> {
     });
 
     const responseText =
-      typeof response === "string" ? response : String(response);
+      normalizeResponse(response);
 
     const hasFunction =
       responseText.includes("function") || responseText.includes("=>");
@@ -409,7 +391,7 @@ async function testCodeGeneration(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testContextRetention(session: any): Promise<void> {
+async function testContextRetention(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Context Retention", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Context Retention"));
@@ -431,7 +413,7 @@ async function testContextRetention(session: any): Promise<void> {
     });
 
     const responseText = (
-      typeof response === "string" ? response : String(response)
+      normalizeResponse(response)
     ).toLowerCase();
 
     const hasRex = responseText.includes("rex");
@@ -458,7 +440,7 @@ async function testContextRetention(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testSummarization(session: any): Promise<void> {
+async function testSummarization(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Summarization", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Summarization"));
@@ -481,7 +463,7 @@ functions that humans associate with the human mind, such as "learning" and "pro
     });
 
     const responseText =
-      typeof response === "string" ? response : String(response);
+      normalizeResponse(response);
     const isShorter = responseText.length < longText.length;
 
     suite.tests.push({
@@ -502,7 +484,7 @@ functions that humans associate with the human mind, such as "learning" and "pro
   testResults.push(suite);
 }
 
-async function testCreativeText(session: any): Promise<void> {
+async function testCreativeText(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Creative Text", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Creative Text"));
@@ -517,7 +499,7 @@ async function testCreativeText(session: any): Promise<void> {
     });
 
     const responseText =
-      typeof response === "string" ? response : String(response);
+      normalizeResponse(response);
 
     suite.tests.push({
       name: "Creative story generation",
@@ -525,7 +507,7 @@ async function testCreativeText(session: any): Promise<void> {
       message: `Story: "${responseText.substring(0, 120)}..."`,
     });
 
-    const hasCoherence = responseText.split(/[.!?]/).length >= 2;
+    const hasCoherence = countSentences(responseText) >= 2;
 
     suite.tests.push({
       name: "Story coherence",
@@ -547,7 +529,7 @@ async function testCreativeText(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testInstructionFollowing(session: any): Promise<void> {
+async function testInstructionFollowing(session: LlamaSession): Promise<void> {
   const suite: TestSuite = {
     name: "Instruction Following (Compliance)",
     tests: [],
@@ -562,30 +544,24 @@ async function testInstructionFollowing(session: any): Promise<void> {
       maxTokens: 10,
     });
 
-    const responseText = (
-      typeof response === "string" ? response : String(response)
-    )
-      .toUpperCase()
-      .trim();
-    const isExact = responseText === "YES" || responseText === "NO";
-    const isStrict =
-      responseText.length <= 5 &&
-      (responseText.includes("YES") || responseText.includes("NO"));
+    const responseText = normalizeResponse(response);
+    const { isExact, isStrict, normalized } =
+      checkInstructionFollowing(responseText);
 
     suite.tests.push(
       {
         name: "Exact format compliance (YES/NO only)",
         passed: isExact,
         message: isExact
-          ? `Perfect: "${responseText}"`
-          : `Got: "${responseText}" (should be exactly YES or NO)`,
+          ? `Perfect: "${normalized}"`
+          : `Got: "${normalized}" (should be exactly YES or NO)`,
       },
       {
         name: "Contains valid answer (lenient)",
         passed: isStrict,
         message: isStrict
-          ? `Contains valid answer: "${responseText}"`
-          : `Response too verbose: "${responseText.substring(0, 50)}..."`,
+          ? `Contains valid answer: "${normalized}"`
+          : `Response too verbose: "${normalized.substring(0, 50)}..."`,
       }
     );
   } catch (error: any) {
@@ -601,7 +577,7 @@ async function testInstructionFollowing(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testStructuredOutput(session: any): Promise<void> {
+async function testStructuredOutput(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Structured Output (JSON)", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Structured Output (JSON)"));
@@ -614,44 +590,30 @@ async function testStructuredOutput(session: any): Promise<void> {
       maxTokens: 50,
     });
 
-    const responseText =
-      typeof response === "string" ? response : String(response);
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    let isValidJson = false;
-    let parsedData: { name?: string; age?: number } | null = null;
-
-    if (jsonMatch) {
-      try {
-        parsedData = JSON.parse(jsonMatch[0]);
-        isValidJson = true;
-      } catch {
-        isValidJson = false;
-      }
-    }
-
-    const hasName = parsedData?.name?.toLowerCase().includes("anna") ?? false;
-    const hasAge = parsedData?.age === 29 || String(parsedData?.age) === "29";
+    const responseText = normalizeResponse(response);
+    const { isValidJson, parsed, hasName, hasAge } =
+      parsePersonJson(responseText);
 
     suite.tests.push(
       {
         name: "Returns valid JSON structure",
         passed: isValidJson,
         message: isValidJson
-          ? `Valid JSON: ${JSON.stringify(parsedData)}`
+          ? `Valid JSON: ${JSON.stringify(parsed)}`
           : `No valid JSON found in: "${responseText.substring(0, 80)}..."`,
       },
       {
         name: "Extracts correct name (Anna)",
         passed: hasName,
         message: hasName
-          ? `Name extracted correctly: ${parsedData?.name}`
+          ? `Name extracted correctly: ${parsed?.name}`
           : `Name not found or incorrect`,
       },
       {
         name: "Extracts correct age (29)",
         passed: hasAge,
         message: hasAge
-          ? `Age extracted correctly: ${parsedData?.age}`
+          ? `Age extracted correctly: ${parsed?.age}`
           : `Age not found or incorrect`,
       }
     );
@@ -668,7 +630,7 @@ async function testStructuredOutput(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testFewShotContextRetention(session: any): Promise<void> {
+async function testFewShotContextRetention(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Few-Shot Context Retention", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Few-Shot Context Retention"));
@@ -684,10 +646,8 @@ async function testFewShotContextRetention(session: any): Promise<void> {
       maxTokens: 20,
     });
 
-    const responseText = (
-      typeof response === "string" ? response : String(response)
-    ).toLowerCase();
-    const hasApiKey = responseText.includes("12345");
+    const responseText = normalizeResponse(response);
+    const hasApiKey = responseContainsApiKey(responseText, "12345");
 
     suite.tests.push({
       name: "Retains API key across turns",
@@ -709,7 +669,7 @@ async function testFewShotContextRetention(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testDeterminism(session: any): Promise<void> {
+async function testDeterminism(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Determinism (Low Temperature)", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Determinism (Low Temperature)"));
@@ -726,13 +686,9 @@ async function testDeterminism(session: any): Promise<void> {
       maxTokens: 10,
     });
 
-    const text1 = (
-      typeof response1 === "string" ? response1 : String(response1)
-    ).trim();
-    const text2 = (
-      typeof response2 === "string" ? response2 : String(response2)
-    ).trim();
-    const isIdentical = text1 === text2;
+    const text1 = normalizeResponse(response1).trim();
+    const text2 = normalizeResponse(response2).trim();
+    const isIdentical = responsesAreIdentical(response1, response2);
     const hasCorrectAnswer = text1.includes("4") || text2.includes("4");
 
     suite.tests.push(
@@ -764,7 +720,7 @@ async function testDeterminism(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testLatencyMetrics(session: any): Promise<void> {
+async function testLatencyMetrics(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Latency & Throughput Metrics", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Latency & Throughput Metrics"));
@@ -794,12 +750,12 @@ async function testLatencyMetrics(session: any): Promise<void> {
     suite.tests.push(
       {
         name: "Time to first token < 5s",
-        passed: firstTokenTime < 5000,
+        passed: firstTokenTime < TEST_THRESHOLDS.firstTokenMs,
         message: `First token: ${firstTokenTime}ms`,
       },
       {
         name: "Total generation time reasonable",
-        passed: totalTime < 30000,
+        passed: totalTime < TEST_THRESHOLDS.responseTimeMs,
         message: `Total time: ${totalTime}ms`,
       },
       {
@@ -821,7 +777,7 @@ async function testLatencyMetrics(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-async function testContextWindowBoundary(session: any): Promise<void> {
+async function testContextWindowBoundary(session: LlamaSession): Promise<void> {
   const suite: TestSuite = { name: "Context Window Boundary", tests: [] };
 
   console.log(chalk.cyan("\nTest Suite: Context Window Boundary"));
@@ -837,7 +793,7 @@ async function testContextWindowBoundary(session: any): Promise<void> {
     });
 
     const responseText = (
-      typeof response === "string" ? response : String(response)
+      normalizeResponse(response)
     ).toLowerCase();
     const hasParis = responseText.includes("paris");
     const isShort = responseText.length < 50;
@@ -869,77 +825,6 @@ async function testContextWindowBoundary(session: any): Promise<void> {
   testResults.push(suite);
 }
 
-function printSuiteResults(suite: TestSuite): void {
-  for (const test of suite.tests) {
-    const status = test.passed ? chalk.green("[PASS]") : chalk.red("[FAIL]");
-    const duration = test.duration ? chalk.gray(` (${test.duration}ms)`) : "";
-    console.log(`  ${status} ${test.name}${duration}`);
-    if (test.message) {
-      console.log(chalk.gray(`     ${test.message}`));
-    }
-    if (test.error) {
-      console.log(chalk.red(`     Error: ${test.error}`));
-    }
-  }
-}
-
-function printTestSummary(): void {
-  console.log(chalk.blue("\n" + "=".repeat(60)));
-  console.log(chalk.cyan("\nTest Summary\n"));
-
-  let totalTests = 0;
-  let passedTests = 0;
-
-  for (const suite of testResults) {
-    const suitePassed = suite.tests.filter((t) => t.passed).length;
-    const suiteTotal = suite.tests.length;
-    totalTests += suiteTotal;
-    passedTests += suitePassed;
-
-    const status =
-      suitePassed === suiteTotal
-        ? chalk.green("[PASS]")
-        : chalk.yellow("[WARN]");
-    console.log(
-      `${status} ${suite.name}: ${suitePassed}/${suiteTotal} tests passed`
-    );
-  }
-
-  console.log(chalk.blue("\n" + "-".repeat(60)));
-  const passRate = ((passedTests / totalTests) * 100).toFixed(1);
-  let summaryColor;
-  if (passRate >= "80") {
-    summaryColor = chalk.green;
-  } else if (passRate >= "50") {
-    summaryColor = chalk.yellow;
-  } else {
-    summaryColor = chalk.red;
-  }
-
-  console.log(
-    summaryColor(
-      `\nOverall: ${passedTests}/${totalTests} tests passed (${passRate}%)`
-    )
-  );
-
-  if (passedTests === totalTests) {
-    console.log(
-      chalk.green(
-        "\nAll tests passed! Your implementation is working correctly."
-      )
-    );
-  } else if (passedTests >= totalTests * 0.8) {
-    console.log(
-      chalk.yellow("\nMost tests passed. Some issues may be expected behavior.")
-    );
-  } else {
-    console.log(
-      chalk.red("\nSeveral tests failed. Review the implementation.")
-    );
-  }
-
-  console.log(chalk.gray("\n" + "=".repeat(60) + "\n"));
-}
 
 try {
   await runComprehensiveTests();

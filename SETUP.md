@@ -2,17 +2,18 @@
 
 ## What's in this repo
 
-TypeScript proof of concept for running GGUF models locally via **node-llama-cpp**.
+TypeScript proof of concept for running **Llama from Node.js** via **Ollama** (recommended) or **llama-node** (legacy in-process GGUF).
 
 ```
 llama-node-poc/
 ├── src/
 │   ├── index.ts                  # CLI entry point
 │   ├── config.ts                 # Model and generation settings
+│   ├── providers/                # ollama + llama-node adapters
 │   ├── types/                    # Shared TypeScript types
 │   ├── examples/                 # basic, chat, streaming
 │   └── tests/                    # quick + comprehensive regression suite
-├── models/                       # Place your .gguf model here
+├── models/                       # Place your .gguf model here (llama-node)
 ├── dist/                         # Compiled output (npm run build)
 ├── Dockerfile
 └── README.md
@@ -21,10 +22,21 @@ llama-node-poc/
 ## Prerequisites
 
 - Node.js 20+ (tested on v22)
-- ~6 GB RAM for Llama-2-7B Q4_K_M on CPU
-- A GGUF model file
+- **Ollama path:** Ollama installed and a model pulled (`ollama pull tinyllama`)
+- **llama-node path:** ~6 GB RAM for Llama-2-7B Q4_K_M on CPU + a GGUF file
 
-## Quick start
+## Quick start (Ollama)
+
+```bash
+npm install
+ollama pull tinyllama
+npm run test:quick
+npm run dev -- basic --provider ollama
+npm run dev -- chat --provider ollama
+npm run dev -- stream --provider ollama
+```
+
+## Quick start (llama-node + GGUF)
 
 ```bash
 npm install
@@ -33,10 +45,8 @@ mkdir -p models
 wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7B-chat.Q4_K_M.gguf \
   -O models/llama-model.gguf
 
-npm run test:quick   # connectivity check (~10-20s)
-npm run basic        # basic generation
-npm run chat         # interactive chat
-npm run stream       # streaming demo
+PROVIDER=llama-node npm run test:quick
+npm run dev -- basic --provider llama-node
 ```
 
 ## Scripts
@@ -46,7 +56,9 @@ npm run stream       # streaming demo
 | `npm run dev -- basic`      | Basic text generation                       |
 | `npm run dev -- chat`       | Interactive chat                            |
 | `npm run dev -- stream`     | Streaming response demo                     |
+| `npm run dev -- providers`  | List available backends                     |
 | `npm run dev -- info`       | Show config and system info                 |
+| `npm run test:providers`    | Provider integration tests                  |
 | `npm run test:quick`        | Fast connectivity test                      |
 | `npm run test`              | Full regression suite (31 tests, ~5-10 min) |
 | `npm run generate:examples` | Regenerate article example outputs          |
@@ -54,17 +66,23 @@ npm run stream       # streaming demo
 
 ## Library choice
 
-This project uses **node-llama-cpp** (currently `^3.18.1`).
+| Package      | Role in this repo                                      |
+| ------------ | ------------------------------------------------------ |
+| **ollama**   | Default — Node.js client to local Ollama server        |
+| **llama-node** | Optional — in-process GGUF via `@llama-node/llama-cpp` |
 
-The older **llama-node** package (`0.1.6`, last release May 2023) is archived and no longer maintained. It is not used in this codebase.
+`llama-node@0.1.6` (May 2023) is archived and may not load modern GGUF. Prefer Ollama for current models.
 
 ## Configuration
 
 Edit `src/config.ts` for:
 
-- model path and context length
-- CPU threads and GPU layers
+- default provider (`ollama` or `llama-node`)
+- Ollama host and model name
+- GGUF model path, context length, CPU threads, GPU layers
 - default temperature, topP, topK, maxTokens
+
+Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `PROVIDER`
 
 ## Production next steps
 

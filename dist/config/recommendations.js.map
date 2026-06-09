@@ -1,0 +1,1 @@
+{"version":3,"file":"recommendations.js","sourceRoot":"","sources":["../../src/config/recommendations.ts"],"names":[],"mappings":"AAEA,MAAM,eAAe,GAA+C;IAClE,WAAW,EAAE,0DAA0D;IACvE,UAAU,EAAE,uDAAuD;IACnE,cAAc,EACZ,kEAAkE;CACrE,CAAC;AAEF,MAAM,sBAAsB,GAC1B,iDAAiD,CAAC;AAEpD,MAAM,UAAU,sBAAsB,CACpC,OAAmC;IAEnC,OAAO,eAAe,CAAC,OAAO,CAAC,IAAI,sBAAsB,CAAC;AAC5D,CAAC"}
