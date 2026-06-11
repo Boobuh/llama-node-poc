@@ -7,8 +7,10 @@ export const DEFAULT_LLAMA_PROVIDER_ID: LlamaProviderId = "ollama";
 export const REQUIRED_TEST_PROVIDERS: LlamaProviderId[] = ["ollama"];
 export const OPTIONAL_TEST_PROVIDERS: LlamaProviderId[] = ["llama-node"];
 
-export const UNKNOWN_PROVIDER_MESSAGE = (value: string) =>
-  `Unknown provider "${value}". Use: ollama, llama-node`;
+export function unknownProviderMessage(value: string): string {
+  return `Unknown provider "${value}". Use: ollama, llama-node`;
+}
 
-export const UNKNOWN_PROVIDER_ID_MESSAGE = (id: string) =>
-  `Unknown provider: ${id}`;
+export function unknownProviderIdMessage(id: string): string {
+  return `Unknown provider: ${id}`;
+}

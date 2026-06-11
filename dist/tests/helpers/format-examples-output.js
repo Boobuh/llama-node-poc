@@ -1,7 +1,5 @@
-export function formatArticleExamplesOutput(examples, header) {
-    const body = examples
-        .map((ex, idx) => {
-        return `ПРИКЛАД ${idx + 1}: ${ex.category}
+function formatSingleExample(ex, index) {
+    return `ПРИКЛАД ${index + 1}: ${ex.category}
 
 Запит:
 ${ex.prompt}
@@ -14,8 +12,13 @@ ${ex.prompt}
 ${ex.response}
 
 ${"=".repeat(60)}`;
-    })
-        .join("\n\n");
+}
+export function formatArticleExamplesOutput(examples, header) {
+    const sections = [];
+    for (let index = 0; index < examples.length; index++) {
+        sections.push(formatSingleExample(examples[index], index));
+    }
+    const body = sections.join("\n\n");
     return `${header}
 
 ${"=".repeat(60)}

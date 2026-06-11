@@ -5,6 +5,12 @@ import { getProvider, parseProvider } from "../providers";
 import { ARTICLE_EXAMPLE_DEFINITIONS } from "./fixtures/article-examples";
 import { formatArticleExamplesOutput } from "./helpers/format-examples-output";
 import { prepareTestProvider } from "./helpers/setup-test-provider";
+function printExamplesSummary(examples) {
+    for (let index = 0; index < examples.length; index++) {
+        const ex = examples[index];
+        console.log(`${index + 1}. ${ex.category}: ${ex.response.substring(0, 60)}...`);
+    }
+}
 async function generateExamples() {
     const providerId = parseProvider(process.env.PROVIDER ?? config.defaultProvider);
     const provider = getProvider(providerId);
@@ -21,6 +27,9 @@ async function generateExamples() {
     try {
         for (let i = 0; i < ARTICLE_EXAMPLE_DEFINITIONS.length; i++) {
             const def = ARTICLE_EXAMPLE_DEFINITIONS[i];
+            if (!def) {
+                continue;
+            }
             console.log(`${i + 1}. ${def.category}...`);
             if (def.contextSetup) {
                 await session.prompt(def.contextSetup, {
@@ -51,17 +60,21 @@ async function generateExamples() {
         fs.writeFileSync(EXAMPLES_OUTPUT_PATH, fullOutput, "utf-8");
         console.log(`✅ Examples saved to ${EXAMPLES_OUTPUT_PATH}\n`);
         console.log("Summary:");
-        examples.forEach((ex, idx) => {
-            console.log(`${idx + 1}. ${ex.category}: ${ex.response.substring(0, 60)}...`);
-        });
+        printExamplesSummary(examples);
     }
     catch (error) {
         console.error("Error generating examples:", error);
         process.exit(1);
     }
 }
-generateExamples().catch((error) => {
-    console.error("Fatal error:", error);
-    process.exit(1);
-});
+async function runGenerateExamples() {
+    try {
+        await generateExamples();
+    }
+    catch (error) {
+        console.error("Fatal error:", error);
+        process.exit(1);
+    }
+}
+void runGenerateExamples();
 //# sourceMappingURL=generate-examples.js.map

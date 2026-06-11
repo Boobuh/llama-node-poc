@@ -16,17 +16,25 @@ import { runBasicExample } from "./examples/basic-example";
 import { runChatExample } from "./examples/chat-example";
 import { runStreamingExample } from "./examples/streaming-example";
 
+function parseTemperature(val: string): number {
+  return parseFloat(val);
+}
+
+function parseMaxTokens(val: string): number {
+  return parseInt(val, 10);
+}
+
 function addCommonOptions(command: ReturnType<typeof program.command>) {
   return command
     .option(
       "-t, --temperature <number>",
       "Temperature for generation",
-      (val: string) => parseFloat(val)
+      parseTemperature
     )
     .option(
       "-m, --max-tokens <number>",
       "Maximum tokens to generate",
-      (val: string) => parseInt(val, 10)
+      parseMaxTokens
     )
     .option("-p, --provider <name>", CLI_PROVIDER_HELP, config.defaultProvider);
 }
@@ -73,6 +81,41 @@ function showSystemInfo(): void {
   showProviders();
 }
 
+async function runBasicCommand(options: CommandOptions): Promise<void> {
+  await runBasicExample(options);
+}
+
+async function runChatCommand(options: CommandOptions): Promise<void> {
+  await runChatExample(options);
+}
+
+async function runStreamCommand(options: CommandOptions): Promise<void> {
+  await runStreamingExample(options);
+}
+
+function handleInvalidCommand(): void {
+  console.error(chalk.red("Invalid command"));
+  program.outputHelp();
+  process.exit(1);
+}
+
+function handleUncaughtException(error: Error): void {
+  console.error(chalk.red("Uncaught Exception:"), error.message);
+  process.exit(1);
+}
+
+function handleUnhandledRejection(reason: unknown): void {
+  console.error(chalk.red("Unhandled Rejection:"), reason);
+  process.exit(1);
+}
+
+function isMainModule(): boolean {
+  return (
+    import.meta.url === `file://${process.argv[1]}` ||
+    Boolean(process.argv[1]?.includes("index"))
+  );
+}
+
 async function main(): Promise<void> {
   console.log(chalk.blue(config.cli.welcomeMessage));
   console.log(chalk.gray(`${CLI_TAGLINE}\n`));
@@ -84,21 +127,15 @@ async function main(): Promise<void> {
 
   addCommonOptions(
     program.command("basic").description("Run basic text generation example")
-  ).action(async (options: CommandOptions) => {
-    await runBasicExample(options);
-  });
+  ).action(runBasicCommand);
 
   addCommonOptions(
     program.command("chat").description("Run interactive chat example")
-  ).action(async (options: CommandOptions) => {
-    await runChatExample(options);
-  });
+  ).action(runChatCommand);
 
   addCommonOptions(
     program.command("stream").description("Run streaming response example")
-  ).action(async (options: CommandOptions) => {
-    await runStreamingExample(options);
-  });
+  ).action(runStreamCommand);
 
   program
     .command("info")
@@ -110,33 +147,22 @@ async function main(): Promise<void> {
     .description("List available Llama providers for Node.js")
     .action(showProviders);
 
-  program.on("command:*", () => {
-    console.error(chalk.red("Invalid command"));
-    program.outputHelp();
-    process.exit(1);
-  });
+  program.on("command:*", handleInvalidCommand);
 
   await program.parseAsync();
 }
 
-process.on("uncaughtException", (error: Error) => {
-  console.error(chalk.red("Uncaught Exception:"), error.message);
-  process.exit(1);
-});
+process.on("uncaughtException", handleUncaughtException);
+process.on("unhandledRejection", handleUnhandledRejection);
 
-process.on("unhandledRejection", (reason: unknown) => {
-  console.error(chalk.red("Unhandled Rejection:"), reason);
-  process.exit(1);
-});
-
-if (
-  import.meta.url === `file://${process.argv[1]}` ||
-  process.argv[1]?.includes("index")
-) {
-  main().catch((error: Error) => {
-    console.error(chalk.red("Application Error:"), error.message);
+if (isMainModule()) {
+  try {
+    await main();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red("Application Error:"), message);
     process.exit(1);
-  });
+  }
 }
 
 export default main;

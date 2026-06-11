@@ -1,4 +1,4 @@
-import { DEFAULT_LLAMA_PROVIDER_ID, UNKNOWN_PROVIDER_ID_MESSAGE, UNKNOWN_PROVIDER_MESSAGE, } from "../constants";
+import { DEFAULT_LLAMA_PROVIDER_ID, unknownProviderIdMessage, unknownProviderMessage, } from "../constants";
 import { ollamaProvider } from "./ollama";
 import { llamaNodeProvider } from "./llama-node";
 export const providerRegistry = {
@@ -9,7 +9,7 @@ export const providerList = Object.values(providerRegistry);
 export function getProvider(id) {
     const provider = providerRegistry[id];
     if (!provider) {
-        throw new Error(UNKNOWN_PROVIDER_ID_MESSAGE(id));
+        throw new Error(unknownProviderIdMessage(id));
     }
     return provider;
 }
@@ -20,6 +20,6 @@ export function parseProvider(value) {
     if (value in providerRegistry) {
         return value;
     }
-    throw new Error(UNKNOWN_PROVIDER_MESSAGE(value));
+    throw new Error(unknownProviderMessage(value));
 }
 //# sourceMappingURL=registry.js.map

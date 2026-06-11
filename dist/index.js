@@ -6,10 +6,16 @@ import { providerList } from "./providers";
 import { runBasicExample } from "./examples/basic-example";
 import { runChatExample } from "./examples/chat-example";
 import { runStreamingExample } from "./examples/streaming-example";
+function parseTemperature(val) {
+    return parseFloat(val);
+}
+function parseMaxTokens(val) {
+    return parseInt(val, 10);
+}
 function addCommonOptions(command) {
     return command
-        .option("-t, --temperature <number>", "Temperature for generation", (val) => parseFloat(val))
-        .option("-m, --max-tokens <number>", "Maximum tokens to generate", (val) => parseInt(val, 10))
+        .option("-t, --temperature <number>", "Temperature for generation", parseTemperature)
+        .option("-m, --max-tokens <number>", "Maximum tokens to generate", parseMaxTokens)
         .option("-p, --provider <name>", CLI_PROVIDER_HELP, config.defaultProvider);
 }
 function showProviders() {
@@ -46,6 +52,32 @@ function showSystemInfo() {
     console.log(`  Top K: ${config.generation.topK}`);
     showProviders();
 }
+async function runBasicCommand(options) {
+    await runBasicExample(options);
+}
+async function runChatCommand(options) {
+    await runChatExample(options);
+}
+async function runStreamCommand(options) {
+    await runStreamingExample(options);
+}
+function handleInvalidCommand() {
+    console.error(chalk.red("Invalid command"));
+    program.outputHelp();
+    process.exit(1);
+}
+function handleUncaughtException(error) {
+    console.error(chalk.red("Uncaught Exception:"), error.message);
+    process.exit(1);
+}
+function handleUnhandledRejection(reason) {
+    console.error(chalk.red("Unhandled Rejection:"), reason);
+    process.exit(1);
+}
+function isMainModule() {
+    return (import.meta.url === `file://${process.argv[1]}` ||
+        Boolean(process.argv[1]?.includes("index")));
+}
 async function main() {
     console.log(chalk.blue(config.cli.welcomeMessage));
     console.log(chalk.gray(`${CLI_TAGLINE}\n`));
@@ -53,15 +85,9 @@ async function main() {
         .name(CLI_PROGRAM_NAME)
         .description(CLI_DESCRIPTION)
         .version(CLI_VERSION, "-v, --version", "output the version number");
-    addCommonOptions(program.command("basic").description("Run basic text generation example")).action(async (options) => {
-        await runBasicExample(options);
-    });
-    addCommonOptions(program.command("chat").description("Run interactive chat example")).action(async (options) => {
-        await runChatExample(options);
-    });
-    addCommonOptions(program.command("stream").description("Run streaming response example")).action(async (options) => {
-        await runStreamingExample(options);
-    });
+    addCommonOptions(program.command("basic").description("Run basic text generation example")).action(runBasicCommand);
+    addCommonOptions(program.command("chat").description("Run interactive chat example")).action(runChatCommand);
+    addCommonOptions(program.command("stream").description("Run streaming response example")).action(runStreamCommand);
     program
         .command("info")
         .description("Show system and configuration information")
@@ -70,27 +96,20 @@ async function main() {
         .command("providers")
         .description("List available Llama providers for Node.js")
         .action(showProviders);
-    program.on("command:*", () => {
-        console.error(chalk.red("Invalid command"));
-        program.outputHelp();
-        process.exit(1);
-    });
+    program.on("command:*", handleInvalidCommand);
     await program.parseAsync();
 }
-process.on("uncaughtException", (error) => {
-    console.error(chalk.red("Uncaught Exception:"), error.message);
-    process.exit(1);
-});
-process.on("unhandledRejection", (reason) => {
-    console.error(chalk.red("Unhandled Rejection:"), reason);
-    process.exit(1);
-});
-if (import.meta.url === `file://${process.argv[1]}` ||
-    process.argv[1]?.includes("index")) {
-    main().catch((error) => {
-        console.error(chalk.red("Application Error:"), error.message);
+process.on("uncaughtException", handleUncaughtException);
+process.on("unhandledRejection", handleUnhandledRejection);
+if (isMainModule()) {
+    try {
+        await main();
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(chalk.red("Application Error:"), message);
         process.exit(1);
-    });
+    }
 }
 export default main;
 //# sourceMappingURL=index.js.map

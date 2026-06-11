@@ -16,6 +16,10 @@ import {
 } from "../utils/response";
 import { prepareTestProvider } from "./helpers/setup-test-provider";
 import { printSuiteResults, printTestSummary } from "./helpers/reporting";
+import {
+  createLatencyStreamHandler,
+  createStreamingDotHandler,
+} from "./helpers/stream-callbacks";
 
 const testResults: TestSuite[] = [];
 
@@ -211,19 +215,14 @@ async function testStreamingOutput(session: LlamaSession): Promise<void> {
   console.log(chalk.cyan("\nTest Suite: Streaming Output"));
 
   try {
-    let streamedTokens = 0;
+    const streamState = { streamedTokens: 0 };
     let streamComplete = false;
 
     const startTime = Date.now();
     await session.prompt("Say hello world five times:", {
       temperature: 0.7,
       maxTokens: 50,
-      onTextChunk: (text: string): void => {
-        if (text) {
-          streamedTokens++;
-          process.stdout.write(chalk.gray("."));
-        }
-      },
+      onTextChunk: createStreamingDotHandler(streamState),
     });
     streamComplete = true;
     const duration = Date.now() - startTime;
@@ -233,8 +232,8 @@ async function testStreamingOutput(session: LlamaSession): Promise<void> {
     suite.tests.push(
       {
         name: "Streaming callback invoked",
-        passed: streamedTokens > 0,
-        message: `Received ${streamedTokens} tokens`,
+        passed: streamState.streamedTokens > 0,
+        message: `Received ${streamState.streamedTokens} tokens`,
         duration,
       },
       {
@@ -726,32 +725,29 @@ async function testLatencyMetrics(session: LlamaSession): Promise<void> {
   console.log(chalk.cyan("\nTest Suite: Latency & Throughput Metrics"));
 
   try {
-    let firstTokenTime = 0;
-    let totalTokens = 0;
-    const startTime = Date.now();
+    const latencyState = {
+      firstTokenTime: 0,
+      totalTokens: 0,
+      startTime: Date.now(),
+    };
 
     await session.prompt("Count from 1 to 10:", {
       temperature: 0.7,
       maxTokens: 50,
-      onTextChunk: (text: string) => {
-        if (totalTokens === 0) {
-          firstTokenTime = Date.now() - startTime;
-        }
-        if (text) {
-          totalTokens += text.split(/\s+/).length;
-        }
-      },
+      onTextChunk: createLatencyStreamHandler(latencyState),
     });
 
-    const totalTime = Date.now() - startTime;
+    const totalTime = Date.now() - latencyState.startTime;
     const tokensPerSecond =
-      totalTokens > 0 ? (totalTokens / (totalTime / 1000)).toFixed(2) : "0";
+      latencyState.totalTokens > 0
+        ? (latencyState.totalTokens / (totalTime / 1000)).toFixed(2)
+        : "0";
 
     suite.tests.push(
       {
         name: "Time to first token < 5s",
-        passed: firstTokenTime < TEST_THRESHOLDS.firstTokenMs,
-        message: `First token: ${firstTokenTime}ms`,
+        passed: latencyState.firstTokenTime < TEST_THRESHOLDS.firstTokenMs,
+        message: `First token: ${latencyState.firstTokenTime}ms`,
       },
       {
         name: "Total generation time reasonable",
@@ -760,8 +756,8 @@ async function testLatencyMetrics(session: LlamaSession): Promise<void> {
       },
       {
         name: "Throughput measurement",
-        passed: totalTokens > 0,
-        message: `Tokens/sec: ${tokensPerSecond} (${totalTokens} tokens in ${totalTime}ms)`,
+        passed: latencyState.totalTokens > 0,
+        message: `Tokens/sec: ${tokensPerSecond} (${latencyState.totalTokens} tokens in ${totalTime}ms)`,
       }
     );
   } catch (error: any) {

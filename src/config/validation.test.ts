@@ -4,30 +4,34 @@ import { createDefaultConfig } from "../config/defaults";
 import { validateConfig } from "../config/validation";
 import { getModelRecommendation } from "../config/recommendations";
 
-describe("validateConfig", () => {
-  it("accepts default config", () => {
+describe("validateConfig", function () {
+  it("accepts default config", function () {
     assert.equal(validateConfig(createDefaultConfig()), true);
   });
 
-  it("rejects empty model path", () => {
+  it("rejects empty model path", function () {
     const config = createDefaultConfig();
     config.model.path = "";
-    assert.throws(() => validateConfig(config), /Invalid configuration/);
+    assert.throws(function () {
+      validateConfig(config);
+    }, /Invalid configuration/);
   });
 
-  it("rejects temperature above 2", () => {
+  it("rejects temperature above 2", function () {
     const config = createDefaultConfig();
     config.generation.temperature = 2.1;
-    assert.throws(() => validateConfig(config), /Invalid configuration/);
+    assert.throws(function () {
+      validateConfig(config);
+    }, /Invalid configuration/);
   });
 });
 
-describe("getModelRecommendation", () => {
-  it("returns development recommendation", () => {
+describe("getModelRecommendation", function () {
+  it("returns development recommendation", function () {
     assert.match(getModelRecommendation("development"), /7B/);
   });
 
-  it("returns production recommendation", () => {
+  it("returns production recommendation", function () {
     assert.match(getModelRecommendation("production"), /13B/);
   });
 });

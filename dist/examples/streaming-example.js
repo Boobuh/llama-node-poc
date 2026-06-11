@@ -2,6 +2,12 @@ import chalk from "chalk";
 import { config } from "../config";
 import { getProvider } from "../providers";
 import { buildGenerationConfig, handleExampleError, printGenerationConfig, resolveProviderId, } from "./shared";
+function handleStreamTextChunk(text, state) {
+    if (text) {
+        state.fullResponse += text;
+        process.stdout.write(chalk.white(text));
+    }
+}
 export async function runStreamingExample(options = {}) {
     const providerId = resolveProviderId(options.provider);
     const provider = getProvider(providerId);
@@ -20,19 +26,17 @@ export async function runStreamingExample(options = {}) {
         console.log(chalk.blue("Streaming response...\n"));
         console.log(chalk.green("Response: "));
         const startTime = Date.now();
-        let fullResponse = "";
+        const streamState = { fullResponse: "" };
+        function onTextChunk(text) {
+            handleStreamTextChunk(text, streamState);
+        }
         await session.prompt(prompt, {
             ...streamConfig,
-            onTextChunk: (text) => {
-                if (text) {
-                    fullResponse += text;
-                    process.stdout.write(chalk.white(text));
-                }
-            },
+            onTextChunk,
         });
         const endTime = Date.now();
         console.log(chalk.gray(`\n\nTotal generation time: ${endTime - startTime}ms`));
-        console.log(chalk.gray(`Total characters: ${fullResponse.length}`));
+        console.log(chalk.gray(`Total characters: ${streamState.fullResponse.length}`));
     }
     catch (error) {
         handleExampleError(error, "streaming example");

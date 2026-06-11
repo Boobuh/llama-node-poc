@@ -1,12 +1,7 @@
 import type { ArticleExample } from "../../types/examples";
 
-export function formatArticleExamplesOutput(
-  examples: ArticleExample[],
-  header: string
-): string {
-  const body = examples
-    .map((ex, idx) => {
-      return `ПРИКЛАД ${idx + 1}: ${ex.category}
+function formatSingleExample(ex: ArticleExample, index: number): string {
+  return `ПРИКЛАД ${index + 1}: ${ex.category}
 
 Запит:
 ${ex.prompt}
@@ -19,8 +14,17 @@ ${ex.prompt}
 ${ex.response}
 
 ${"=".repeat(60)}`;
-    })
-    .join("\n\n");
+}
+
+export function formatArticleExamplesOutput(
+  examples: ArticleExample[],
+  header: string
+): string {
+  const sections: string[] = [];
+  for (let index = 0; index < examples.length; index++) {
+    sections.push(formatSingleExample(examples[index], index));
+  }
+  const body = sections.join("\n\n");
 
   return `${header}
 

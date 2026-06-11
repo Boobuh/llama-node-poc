@@ -49,16 +49,23 @@ async function main() {
     for (const { id, ok, required } of results) {
         const label = required ? id : `${id} (optional)`;
         console.log(`${ok ? chalk.green("PASS") : chalk.red("FAIL")} ${label}`);
-        if (ok && required)
+        if (ok && required) {
             requiredPassed++;
+        }
     }
     if (requiredPassed < REQUIRED_TEST_PROVIDERS.length) {
         process.exit(1);
     }
     console.log(chalk.green("\nRequired providers working."));
 }
-main().catch((error) => {
-    console.error(error);
-    process.exit(1);
-});
+async function runProvidersTest() {
+    try {
+        await main();
+    }
+    catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
+}
+void runProvidersTest();
 //# sourceMappingURL=providers-test.js.map

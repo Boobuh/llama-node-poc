@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { computePassRateSummary, isMostlyPassing } from "../../utils/pass-rate";
+import { countPassedTests } from "../../utils/response";
 export function printSuiteResults(suite) {
     for (const test of suite.tests) {
         const status = test.passed ? chalk.green("[PASS]") : chalk.red("[FAIL]");
@@ -19,7 +20,7 @@ export function printTestSummary(testResults) {
     let totalTests = 0;
     let passedTests = 0;
     for (const suite of testResults) {
-        const suitePassed = suite.tests.filter((t) => t.passed).length;
+        const suitePassed = countPassedTests(suite.tests);
         const suiteTotal = suite.tests.length;
         totalTests += suiteTotal;
         passedTests += suitePassed;

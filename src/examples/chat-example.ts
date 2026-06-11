@@ -1,10 +1,9 @@
-import * as readline from "readline";
+import * as readline from "node:readline/promises";
 import chalk from "chalk";
 import { config } from "../config";
 import { getProvider } from "../providers";
 import type { LlamaSession } from "../types/providers";
 import type { LlamaConfig } from "../types";
-import type { ReadLineInterface } from "../types/cli";
 import { isExitCommand } from "../utils/exit-command";
 import {
   buildGenerationConfig,
@@ -40,50 +39,48 @@ export async function runChatExample(
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-    }) as ReadLineInterface;
+    });
 
-    await startChatLoop(rl, session, generationConfig);
-    rl.close();
+    try {
+      await startChatLoop(rl, session, generationConfig);
+    } finally {
+      rl.close();
+    }
   } catch (error: unknown) {
     handleExampleError(error, "chat example");
   }
 }
 
 async function startChatLoop(
-  rl: ReadLineInterface,
+  rl: readline.Interface,
   session: LlamaSession,
   generationConfig: LlamaConfig
 ): Promise<void> {
-  const askQuestion = (): void => {
-    rl.question(chalk.blue("You: "), async (userInput: string) => {
-      if (isExitCommand(userInput, config.cli.exitCommands)) {
-        console.log(chalk.yellow("\nGoodbye! Chat session ended."));
-        return;
-      }
+  while (true) {
+    const userInput = await rl.question(chalk.blue("You: "));
 
-      if (userInput.trim() === "") {
-        askQuestion();
-        return;
-      }
+    if (isExitCommand(userInput, config.cli.exitCommands)) {
+      console.log(chalk.yellow("\nGoodbye! Chat session ended."));
+      return;
+    }
 
-      console.log(chalk.green("Assistant: "), chalk.white("thinking..."));
+    if (userInput.trim() === "") {
+      continue;
+    }
 
-      try {
-        const startTime = Date.now();
-        const response = await session.prompt(userInput, generationConfig);
-        const endTime = Date.now();
+    console.log(chalk.green("Assistant: "), chalk.white("thinking..."));
 
-        console.log(
-          chalk.white(response),
-          chalk.gray(`\n  (${endTime - startTime}ms)`)
-        );
-      } catch (error) {
-        console.error(chalk.red("Error generating response"), error);
-      }
+    try {
+      const startTime = Date.now();
+      const response = await session.prompt(userInput, generationConfig);
+      const endTime = Date.now();
 
-      askQuestion();
-    });
-  };
-
-  askQuestion();
+      console.log(
+        chalk.white(response),
+        chalk.gray(`\n  (${endTime - startTime}ms)`)
+      );
+    } catch (error) {
+      console.error(chalk.red("Error generating response"), error);
+    }
+  }
 }

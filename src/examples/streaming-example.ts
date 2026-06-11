@@ -9,6 +9,20 @@ import {
   type ExampleOptions,
 } from "./shared";
 
+interface StreamResponseState {
+  fullResponse: string;
+}
+
+function handleStreamTextChunk(
+  text: string,
+  state: StreamResponseState
+): void {
+  if (text) {
+    state.fullResponse += text;
+    process.stdout.write(chalk.white(text));
+  }
+}
+
 export async function runStreamingExample(
   options: ExampleOptions = {}
 ): Promise<void> {
@@ -36,23 +50,24 @@ export async function runStreamingExample(
     console.log(chalk.green("Response: "));
 
     const startTime = Date.now();
-    let fullResponse = "";
+    const streamState: StreamResponseState = { fullResponse: "" };
+
+    function onTextChunk(text: string): void {
+      handleStreamTextChunk(text, streamState);
+    }
 
     await session.prompt(prompt, {
       ...streamConfig,
-      onTextChunk: (text: string) => {
-        if (text) {
-          fullResponse += text;
-          process.stdout.write(chalk.white(text));
-        }
-      },
+      onTextChunk,
     });
 
     const endTime = Date.now();
     console.log(
       chalk.gray(`\n\nTotal generation time: ${endTime - startTime}ms`)
     );
-    console.log(chalk.gray(`Total characters: ${fullResponse.length}`));
+    console.log(
+      chalk.gray(`Total characters: ${streamState.fullResponse.length}`)
+    );
   } catch (error: unknown) {
     handleExampleError(error, "streaming example");
   }

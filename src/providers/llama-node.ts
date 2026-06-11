@@ -3,6 +3,10 @@ import { LLAMA_NODE_LOAD_DEFAULTS } from "../constants";
 import { config } from "../config";
 import { resolvePromptOptions } from "./resolve-prompt-options";
 import {
+  createLlamaNodeStreamCallback,
+  noopLlamaNodeCallback,
+} from "./llama-node-callbacks";
+import {
   getLlamaNodeSetupInstructions,
   getModelNotFoundMessage,
 } from "./setup-messages";
@@ -25,17 +29,16 @@ class LlamaNodeSession implements LlamaSession {
     };
 
     if (options.onTextChunk) {
-      let full = "";
-      await this.llm.createCompletion(completionParams, (data) => {
-        if (data.token) {
-          full += data.token;
-          options.onTextChunk!(data.token);
-        }
-      });
-      return full;
+      const state = { full: "" };
+      const callback = createLlamaNodeStreamCallback(options, state);
+      await this.llm.createCompletion(completionParams, callback);
+      return state.full;
     }
 
-    const result = await this.llm.createCompletion(completionParams, () => {});
+    const result = await this.llm.createCompletion(
+      completionParams,
+      noopLlamaNodeCallback
+    );
     return result.tokens.join("");
   }
 }

@@ -16,7 +16,7 @@ export type {
   StreamCallback,
   StructuredJsonResult,
 } from "./config";
-export type { CommandOptions, ExampleOptions, ReadLineInterface } from "./cli";
+export type { CommandOptions, ExampleOptions } from "./cli";
 export type { TestResult, TestSuite, PassRateLevel, PassRateSummary } from "./test";
 export type { ArticleExample, ArticleExampleDefinition } from "./examples";
 export type { LlamaNodeLlm, LlamaNodeLoadParams } from "./llama-node";

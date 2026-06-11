@@ -3,9 +3,35 @@ export function normalizeResponse(response: unknown): string {
 }
 
 export function countWords(text: string): number {
-  return text.split(/\s+/).filter(Boolean).length;
+  const parts = text.split(/\s+/);
+  let count = 0;
+  for (const part of parts) {
+    if (part) {
+      count++;
+    }
+  }
+  return count;
 }
 
 export function countSentences(text: string): number {
-  return text.split(/[.!?]/).filter((part) => part.trim().length > 0).length;
+  const parts = text.split(/[.!?]/);
+  let count = 0;
+  for (const part of parts) {
+    if (part.trim().length > 0) {
+      count++;
+    }
+  }
+  return count;
+}
+
+export function countPassedTests(
+  tests: ReadonlyArray<{ passed: boolean }>
+): number {
+  let count = 0;
+  for (const test of tests) {
+    if (test.passed) {
+      count++;
+    }
+  }
+  return count;
 }

@@ -2,28 +2,32 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { parseProvider, getProvider } from "../providers/registry";
 
-describe("parseProvider", () => {
-  it("defaults to ollama", () => {
+describe("parseProvider", function () {
+  it("defaults to ollama", function () {
     assert.equal(parseProvider(), "ollama");
   });
 
-  it("accepts llama-node", () => {
+  it("accepts llama-node", function () {
     assert.equal(parseProvider("llama-node"), "llama-node");
   });
 
-  it("rejects unknown provider", () => {
-    assert.throws(() => parseProvider("unknown"), /Unknown provider/);
+  it("rejects unknown provider", function () {
+    assert.throws(function () {
+      parseProvider("unknown");
+    }, /Unknown provider/);
   });
 });
 
-describe("getProvider", () => {
-  it("returns ollama adapter", () => {
+describe("getProvider", function () {
+  it("returns ollama adapter", function () {
     assert.equal(getProvider("ollama").id, "ollama");
   });
 
-  it("throws for invalid id", () => {
+  it("throws for invalid id", function () {
     assert.throws(
-      () => getProvider("invalid" as "ollama"),
+      function () {
+        getProvider("invalid" as "ollama");
+      },
       /Unknown provider/
     );
   });

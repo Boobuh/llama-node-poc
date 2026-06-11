@@ -67,7 +67,9 @@ async function main(): Promise<void> {
   for (const { id, ok, required } of results) {
     const label = required ? id : `${id} (optional)`;
     console.log(`${ok ? chalk.green("PASS") : chalk.red("FAIL")} ${label}`);
-    if (ok && required) requiredPassed++;
+    if (ok && required) {
+      requiredPassed++;
+    }
   }
 
   if (requiredPassed < REQUIRED_TEST_PROVIDERS.length) {
@@ -77,7 +79,13 @@ async function main(): Promise<void> {
   console.log(chalk.green("\nRequired providers working."));
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+async function runProvidersTest(): Promise<void> {
+  try {
+    await main();
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+void runProvidersTest();
