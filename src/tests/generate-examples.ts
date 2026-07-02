@@ -57,7 +57,7 @@ async function generateExamples(): Promise<void> {
       examples.push({
         category: def.category,
         prompt: def.contextSetup
-          ? `${def.prompt} (після: ${def.contextSetup})`
+          ? `${def.prompt} (after: ${def.contextSetup})`
           : def.prompt,
         response,
         temperature: def.temperature,
@@ -71,7 +71,7 @@ async function generateExamples(): Promise<void> {
 
     const header = `ПРИКЛАДИ ЗАПИТІВ ТА ВІДПОВІДЕЙ LLAMA
 
-Ці приклади згенеровані через ${provider.label} (${providerId}) на Node.js.`;
+Ці приклади згенеровані через ${provider.label} (${providerId}), модель: ${process.env.OLLAMA_MODEL ?? config.ollama.model}, Node.js.`;
 
     const fullOutput = formatArticleExamplesOutput(examples, header);
     fs.writeFileSync(EXAMPLES_OUTPUT_PATH, fullOutput, "utf-8");

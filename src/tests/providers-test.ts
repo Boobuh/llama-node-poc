@@ -64,19 +64,39 @@ async function main(): Promise<void> {
 
   console.log(chalk.blue("\n=== Summary ==="));
   let requiredPassed = 0;
+  let optionalFailed = 0;
   for (const { id, ok, required } of results) {
-    const label = required ? id : `${id} (optional)`;
-    console.log(`${ok ? chalk.green("PASS") : chalk.red("FAIL")} ${label}`);
-    if (ok && required) {
-      requiredPassed++;
+    if (required) {
+      console.log(`${ok ? chalk.green("PASS") : chalk.red("FAIL")} ${id} (required)`);
+      if (ok) requiredPassed++;
+    } else if (ok) {
+      console.log(`${chalk.green("PASS")} ${id} (optional)`);
+    } else {
+      optionalFailed++;
+      console.log(`${chalk.yellow("SKIP")} ${id} (optional — does not fail the suite)`);
     }
   }
 
   if (requiredPassed < REQUIRED_TEST_PROVIDERS.length) {
+    console.log(chalk.red("\nRequired provider(s) failed. Fix Ollama setup and retry."));
     process.exit(1);
   }
 
-  console.log(chalk.green("\nRequired providers working."));
+  if (optionalFailed > 0) {
+    console.log(
+      chalk.green(
+        `\nSuccess: all ${REQUIRED_TEST_PROVIDERS.length} required provider(s) passed.`,
+      ),
+    );
+    console.log(
+      chalk.gray(
+        `${optionalFailed} optional provider(s) skipped — expected unless you use legacy llama-node + old GGUF.`,
+      ),
+    );
+    return;
+  }
+
+  console.log(chalk.green("\nAll providers passed."));
 }
 
 async function runProvidersTest(): Promise<void> {

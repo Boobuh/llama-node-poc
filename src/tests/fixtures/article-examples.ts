@@ -3,14 +3,14 @@ import type { ArticleExampleDefinition } from "../../types/examples";
 export const ARTICLE_EXAMPLE_DEFINITIONS: ArticleExampleDefinition[] = [
   {
     category: "Instruction Following",
-    prompt: 'Відповідай ТІЛЬКИ "ТАК" або "НІ". Чи вода мокра?',
+    prompt: 'Reply with ONLY "YES" or "NO". Is water wet?',
     temperature: 0.1,
     maxTokens: 10,
   },
   {
     category: "Structured Output (JSON)",
     prompt:
-      'Витягни ім\'я та вік із тексту та поверни тільки валідний JSON: "Мене звати Анна, мені виповнилося 29 минулого місяця."',
+      'Extract the name and age from this text and return only valid JSON: "My name is Anna, I turned 29 last month."',
     temperature: 0.1,
     maxTokens: 50,
   },
@@ -22,35 +22,35 @@ export const ARTICLE_EXAMPLE_DEFINITIONS: ArticleExampleDefinition[] = [
   },
   {
     category: "Context Retention",
-    prompt: "Який мій API ключ?",
+    prompt: "What is my API key?",
     temperature: 0.3,
     maxTokens: 20,
-    contextSetup: "Мій API ключ — 12345. Запам'ятай це.",
+    contextSetup: "My API key is 12345. Remember this.",
   },
   {
     category: "Code Generation",
     prompt:
-      "Напиши JavaScript функцію, яка перевертає рядок. Тільки код, без пояснень.",
+      "Write a JavaScript function that reverses a string. Code only, no explanations.",
     temperature: 0.3,
     maxTokens: 100,
   },
   {
     category: "Creative Text",
     prompt:
-      "Розкажи коротку історію про робота, який відкриває емоції (3 речення).",
+      "Tell a short story about a robot discovering emotions (3 sentences).",
     temperature: 0.8,
     maxTokens: 150,
   },
   {
     category: "Summarization",
     prompt:
-      "Підсумуй цей текст одним реченням:\nШтучний інтелект (AI) — це інтелект, який демонструють машини, на відміну від природного інтелекту людей та тварин.",
+      "Summarize this text in one sentence:\nArtificial intelligence (AI) is intelligence demonstrated by machines, as opposed to the natural intelligence displayed by humans and animals.",
     temperature: 0.4,
     maxTokens: 80,
   },
   {
     category: "Language Understanding",
-    prompt: "Поясни, чому небо синє, одним реченням.",
+    prompt: "Explain why the sky is blue in one sentence.",
     temperature: 0.3,
     maxTokens: 60,
   },

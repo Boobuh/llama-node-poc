@@ -2,11 +2,15 @@ import { config } from "../config";
 
 export function getOllamaSetupInstructions(): string {
   return [
-    "Ollama setup:",
-    "  1. Install Ollama: https://ollama.com",
-    `  2. Pull a model: ollama pull ${config.ollama.model}`,
-    "  3. Ensure server is running: ollama serve",
-    "  4. Run: npm run dev -- basic --provider ollama",
+    "Ollama setup (server + npm client are different things):",
+    "  1. Install Ollama server: https://ollama.com/download",
+    "     Linux: curl -fsSL https://ollama.com/install.sh | sh",
+    `  2. Pull models: ollama pull tinyllama  (tests)`,
+    `                 ollama pull ${config.ollama.model}  (dev demos)`,
+    "  3. Verify: ollama list && curl -s http://127.0.0.1:11434/api/tags | head",
+    "     (ollama serve only if API does not respond)",
+    "  4. Run: npm run test:quick",
+    "     or:  npm run dev -- basic --provider ollama",
   ].join("\n");
 }
 
@@ -23,7 +27,7 @@ export function getLlamaNodeSetupInstructions(): string {
 }
 
 export function getOllamaUnreachableMessage(): string {
-  return `Cannot reach Ollama at ${config.ollama.host}. Start with: ollama serve`;
+  return `Cannot reach Ollama at ${config.ollama.host}. Install from https://ollama.com/download and verify: ollama list`;
 }
 
 export function getModelNotFoundMessage(path: string): string {

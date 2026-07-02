@@ -19,4 +19,4 @@ export const TEST_THRESHOLDS = {
 } as const;
 
 export const OPTIONAL_PROVIDER_FAIL_HINT =
-  "(optional — llama-node may not load modern GGUF; use --provider ollama)";
+  "(optional — skipped; llama-node@0.1.6 cannot load GGUF v2; use --provider ollama)";
