@@ -39,7 +39,10 @@ node docs/teaching-git-mr/generate-screenshots.mjs
 | `logs/03-taught-response.txt` | Після Modelfile — **feature branch + gh pr create** |
 | `logs/live/step-*.txt` | Реальні команди git/gh з live demo |
 | `screenshots/*.png` | Скріншоти кожного кроку для статті |
+| `screenshots/10-github-pr-page.png` | Сторінка PR на GitHub |
 | `Modelfile` | Рецепт навчання (system + MESSAGE) |
+
+**Створений PR:** https://github.com/Boobuh/llama-node-poc/pull/1
 
 ## Що пішло не так у baseline
 

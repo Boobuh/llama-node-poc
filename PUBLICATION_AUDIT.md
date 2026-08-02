@@ -34,6 +34,7 @@ Re-auth in Cursor Settings → MCP → google-drive, then paste manually or retr
 | Ollama troubleshooting            | ✅ after step 5 — connection, model, PATH, port, Windows/WSL    |
 | `jq` optional in HTTP API example | ✅ step 6 — raw JSON without jq                                 |
 | Mini research: teaching the model   | ✅ system prompt, Modelfile, RAG, fine-tuning decision table    |
+| Git/PR Modelfile experiment         | ✅ docs/teaching-git-mr/ — logs, screenshots, PR #1             |
 | Publication files in repo         | ✅ `UKRAINIAN_PUBLICATION.md` mirrored in README + SETUP        |
 
 ---

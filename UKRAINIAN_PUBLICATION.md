@@ -516,6 +516,31 @@ flowchart TD
 | Додати PDF/wiki | embeddings + vector search → context у prompt |
 | Важке доменне навчання | QLoRA → `ADAPTER` у Modelfile |
 
+### Практичний приклад: git push + Pull Request (Modelfile)
+
+Ми перевірили на **реальному знанні**, якого базова `llama3.2` не має: точний workflow для [Boobuh/llama-node-poc](https://github.com/Boobuh/llama-node-poc) (гілка → commit → push → `gh pr create`).
+
+**Повна інструкція з логами та скріншотами:** [`docs/teaching-git-mr/README.md`](docs/teaching-git-mr/README.md)  
+**Pull Request з цим експериментом:** https://github.com/Boobuh/llama-node-poc/pull/1
+
+| Етап | Що сталося | Скріншот |
+| ---- | ---------- | -------- |
+| Baseline | `llama3.2` порадила `git push origin main --force` | `docs/teaching-git-mr/screenshots/01-baseline-ollama.png` |
+| Навчання | `ollama create llama-node-poc-git -f docs/teaching-git-mr/Modelfile` | `02-create-modelfile.png` |
+| Після Modelfile | Feature branch + `gh pr create` | `03-taught-ollama.png` |
+| Live demo | Реальний push і PR #1 | `step-06-push-branch.png`, `10-github-pr-page.png` |
+
+Відтворення в терміналі:
+
+```bash
+ollama create llama-node-poc-git -f docs/teaching-git-mr/Modelfile
+ollama run llama-node-poc-git "Як у Boobuh/llama-node-poc запушити коміт і створити PR?"
+chmod +x docs/teaching-git-mr/run-live-demo.sh
+./docs/teaching-git-mr/run-live-demo.sh
+```
+
+Логи кожного кроку: `docs/teaching-git-mr/logs/` (baseline, taught, live `step-*.txt`).
+
 ## Backend Capability Testing — приклад regression suite
 
 Одне з найважливіших — це не просто "працює чи ні", а **регресійне тестування**, яке можна запускати у CI/CD.
