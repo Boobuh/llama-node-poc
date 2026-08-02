@@ -34,10 +34,10 @@ node docs/teaching-git-mr/generate-screenshots.mjs
 
 | Артефакт | Опис |
 | -------- | ---- |
-| `logs/01-baseline-question.txt` | Відповідь `llama3.2` — **push --force на main**, вигадані шляхи |
-| `logs/02-create-model.txt` | `ollama create llama-node-poc-git` |
-| `logs/03-taught-response.txt` | Після Modelfile — **feature branch + gh pr create** |
-| `logs/live/step-*.txt` | Реальні команди git/gh з live demo |
+| `terminal-logs/01-baseline-question.txt` | Відповідь `llama3.2` — **push --force на main**, вигадані шляхи |
+| `terminal-logs/02-create-model.txt` | `ollama create llama-node-poc-git` |
+| `terminal-logs/03-taught-response.txt` | Після Modelfile — **feature branch + gh pr create** |
+| `terminal-logs/live/step-*.txt` | Реальні команди git/gh з live demo |
 | `screenshots/*.png` | Скріншоти кожного кроку для статті |
 | `screenshots/10-github-pr-page.png` | Сторінка PR на GitHub |
 | `Modelfile` | Рецепт навчання (system + MESSAGE) |

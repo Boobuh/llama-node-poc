@@ -1,0 +1,16 @@
+=== Step 01: Check git status ===
+Command: git status -sb
+---
+## main...origin/main
+ M README.md
+ M SETUP.md
+?? .cursor/
+?? EXAMPLES_FOR_ARTICLE.md
+?? EXAMPLES_OUTPUT.txt
+?? GOOGLE_DOC_SYNC.md
+?? PUBLICATION_AUDIT.md
+?? PUBLICATION_COMMANDS.md
+?? UKRAINIAN_PUBLICATION.md
+?? UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt
+?? docs/
+?? scripts/

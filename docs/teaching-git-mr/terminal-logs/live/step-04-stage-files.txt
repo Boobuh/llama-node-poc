@@ -1,0 +1,16 @@
+## docs/teach-model-git-workflow
+A  PUBLICATION_AUDIT.md
+M  README.md
+M  SETUP.md
+A  UKRAINIAN_PUBLICATION.md
+A  docs/teaching-git-mr/Modelfile
+A  docs/teaching-git-mr/README.md
+A  docs/teaching-git-mr/generate-screenshots.mjs
+A  docs/teaching-git-mr/run-live-demo.sh
+?? .cursor/
+?? EXAMPLES_FOR_ARTICLE.md
+?? EXAMPLES_OUTPUT.txt
+?? GOOGLE_DOC_SYNC.md
+?? PUBLICATION_COMMANDS.md
+?? UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt
+?? scripts/

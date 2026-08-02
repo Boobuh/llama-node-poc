@@ -1,0 +1,4 @@
+=== Step 03: Create feature branch ===
+Command: git checkout -b docs/teach-model-git-workflow
+---
+Switched to a new branch 'docs/teach-model-git-workflow'

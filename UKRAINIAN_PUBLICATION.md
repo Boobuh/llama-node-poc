@@ -539,7 +539,7 @@ chmod +x docs/teaching-git-mr/run-live-demo.sh
 ./docs/teaching-git-mr/run-live-demo.sh
 ```
 
-Логи кожного кроку: `docs/teaching-git-mr/logs/` (baseline, taught, live `step-*.txt`).
+Логи кожного кроку: `docs/teaching-git-mr/terminal-logs/` (baseline, taught, live `step-*.txt`).
 
 ## Backend Capability Testing — приклад regression suite
 

@@ -1,0 +1,31 @@
+=== BASELINE QUESTION ===
+Як у репозиторії Boobuh/llama-node-poc на GitHub запушити коміт і створити merge request (pull request)? Дай точні команди bash по кроках, без загальних порад.
+
+=== BASELINE RESPONSE (llama3.2, no system prompt) ===
+⠙ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠙ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠇ ⠇ ⠋ ⠋ ⠙ ⠹ ⠸ ⠴ ⠦ ⠦ ⠇ ⠏ ⠋ ⠙ ⠙ ⠹ ⠸ ⠴ ⠦ ⠦ ⠧ ⠇ ⠏ ⠋ ⠙ ⠸ ⠸ ⠴ ⠦ ⠦ ⠇ ⠇ ⠏ ⠋ ⠙ ⠸ ⠸ ⠴ ⠴ ⠧ ⠇ ⠏ ⠏ ⠋ ⠹ ⠹ ⠼ ⠼ ⠦ ⠦ ⠇ ⠏ ⠋ ⠋ ⠙ ⠹ ⠸ ⠼ ⠦ ⠦ ⠇ ⠏ ⠏ ⠋ ⠙ ⠹ ⠼ ⠼ ⠴ ⠦ ⠇ ⠇ ⠏ ⠙ ⠹ ⠸ ⠸ Забезпечити комітет та створення merge-ріда на GitHub можна за допомогою на
+наступних команд:
+
+1. Перейти до репозиторію: `cd ~/Repositories/Boobuh/llama-node-poc`
+2. Створіть новий коміт з відповідної повідомленням: 
+```
+git add .
+git commit -m "Введення нового коміту"
+```
+3. ПовернутиChanges на сервер: `git push origin main --force`
+4. Перейти до основного архіву репозиторію: `git checkout main`
+5. Створіть новий флешпойн з бажаної повідомленням: 
+```bash
+git merge -m "Введення нового флешпояна"
+```
+
+6. ПовернутиChanges на сервер: `git push origin main`
+7. Перейти до архіву сушіння коміту: `git cherry-pick HEAD~1..HEAD`
+8. ПовернутиChanges на сервер: `git push origin main`
+9. Створіть merge-рід (pull-рідом): 
+```
+git request-pull --branch=main origin/main
+```
+
+10. Перейти до архіву сушіння коміту: `git cherry-pick HEAD~1..HEAD`
+11. ПовернутиChanges на сервер: `git push origin main`
+

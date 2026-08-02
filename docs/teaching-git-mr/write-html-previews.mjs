@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
 const OUT = join(ROOT, "docs/teaching-git-mr/screenshots");
-const LOGS = join(ROOT, "docs/teaching-git-mr/logs");
+const LOGS = join(ROOT, "docs/teaching-git-mr/terminal-logs");
 
 mkdirSync(join(OUT, "_html"), { recursive: true });
 

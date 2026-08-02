@@ -1,0 +1,8 @@
+[docs/teach-model-git-workflow 30e972a] docs: add teach-model git/PR experiment with logs and screenshots
+ 8 files changed, 1961 insertions(+), 29 deletions(-)
+ create mode 100644 PUBLICATION_AUDIT.md
+ create mode 100644 UKRAINIAN_PUBLICATION.md
+ create mode 100644 docs/teaching-git-mr/Modelfile
+ create mode 100644 docs/teaching-git-mr/README.md
+ create mode 100644 docs/teaching-git-mr/generate-screenshots.mjs
+ create mode 100755 docs/teaching-git-mr/run-live-demo.sh

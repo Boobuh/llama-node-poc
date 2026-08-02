@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Live reproduction: push commit + create GitHub Pull Request for llama-node-poc.
-# Logs each step to docs/teaching-git-mr/logs/live/
+# Logs each step to docs/teaching-git-mr/terminal-logs/live/
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-LOG_DIR="$ROOT/docs/teaching-git-mr/logs/live"
+LOG_DIR="$ROOT/docs/teaching-git-mr/terminal-logs/live"
 mkdir -p "$LOG_DIR"
 
 log_step() {
