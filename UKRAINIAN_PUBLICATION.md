@@ -479,6 +479,16 @@ ollama run node-reviewer "Переглянь цей middleware на витоки
 
 RAG **не змінює** llama3.2; ви підставляєте актуальний контекст на кожен запит. Це стандарт для приватних баз знань у 2026 році.
 
+**Runnable demo у POC:**
+
+```bash
+ollama pull nomic-embed-text
+ollama pull llama3.2
+npm run rag:demo -- "Which model do tests use?"
+```
+
+Скрипт: [`scripts/rag-mini-demo.mjs`](scripts/rag-mini-demo.mjs) — in-memory cosine search по 5 chunks, без зовнішньої vector DB.
+
 ### 4. Fine-tuning / LoRA — справжнє «навчання», але важче
 
 Fine-tuning (наприклад Unsloth + QLoRA на GPU) **змінює ваги** під ваш датасет (тон, формат JSON, доменна термінологія). Потім:

@@ -188,7 +188,7 @@ model: {
 },
 ```
 
-Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `PROVIDER`
+Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `OLLAMA_SYSTEM_PROMPT`, `PROVIDER`
 
 ## Code examples
 
@@ -240,7 +240,10 @@ See [`docker-compose.yml`](docker-compose.yml). Publication covers structured JS
 | Topic | Command / file |
 | ----- | -------------- |
 | Model latency benchmarks | `npm run benchmark:models` → `docs/research/benchmarks-latest.txt` |
+| RAG mini-demo | `npm run rag:demo -- "your question"` (needs `nomic-embed-text`) |
 | Sync publication to Google Doc | `npm run sync:doc` |
+| Regenerate plain-text fallback | `npm run sync:googledocs-txt` |
+| Teaching experiment screenshots | `npm run teaching:screenshots` |
 | Teach model (git/PR experiment) | [`docs/teaching-git-mr/README.md`](docs/teaching-git-mr/README.md) |
 
 ## License

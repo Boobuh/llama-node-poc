@@ -26,8 +26,11 @@ ollama run llama-node-poc-git "Як у Boobuh/llama-node-poc запушити к
 chmod +x docs/teaching-git-mr/run-live-demo.sh
 ./docs/teaching-git-mr/run-live-demo.sh
 
-# 5. Скріншоти з логів
-node docs/teaching-git-mr/generate-screenshots.mjs
+# 5. Node.js (same taught model)
+node docs/teaching-git-mr/ask-git-assistant.mjs "How do I create a PR?"
+
+# 6. Regenerate screenshots
+npm run teaching:screenshots
 ```
 
 ## Результати (збережені в репозиторії)

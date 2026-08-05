@@ -20,7 +20,10 @@
     "test:providers": "tsx src/tests/providers-test.ts",
     "generate:examples": "tsx src/tests/generate-examples.ts",
     "benchmark:models": "node scripts/benchmark-models.mjs",
-    "sync:doc": "node scripts/sync-google-doc-rich.mjs"
+    "sync:doc": "node scripts/sync-google-doc-rich.mjs",
+    "sync:googledocs-txt": "tsx src/tests/md-to-googledocs.ts",
+    "rag:demo": "node scripts/rag-mini-demo.mjs",
+    "teaching:screenshots": "bash docs/teaching-git-mr/capture-screenshots.sh"
   },
   "keywords": [
     "llama",

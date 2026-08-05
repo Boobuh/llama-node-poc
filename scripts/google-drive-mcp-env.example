@@ -1,0 +1,9 @@
+# Copy to ~/.config/environment.d/google-drive-mcp.conf (Linux)
+# Then log out/in OR run: systemctl --user import-environment && pkill -f cursor
+#
+# Get values from Google Cloud Console → APIs & Services → Credentials
+# OAuth client type: Web application
+# Redirect URI: https://www.cursor.com/agents/mcp/oauth/callback
+
+GOOGLE_DRIVE_MCP_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_DRIVE_MCP_CLIENT_SECRET=your-client-secret

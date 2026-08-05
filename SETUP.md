@@ -168,6 +168,9 @@ npm run dev -- basic --provider llama-node
 | `npm run generate:examples` | Regenerate article example outputs          |
 | `npm run benchmark:models`  | Latency: tinyllama vs llama3.2 + JSON test  |
 | `npm run sync:doc`          | Sync `UKRAINIAN_PUBLICATION.md` → Google Doc |
+| `npm run sync:googledocs-txt` | Regenerate `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt` |
+| `npm run rag:demo`          | Minimal RAG demo (needs nomic-embed-text)   |
+| `npm run teaching:screenshots` | Regenerate teaching experiment PNGs        |
 | `npm run build`             | Compile TypeScript to `dist/`               |
 
 ## Library choice
@@ -188,7 +191,7 @@ Edit `src/config.ts` for:
 - GGUF model path, context length, CPU threads, GPU layers
 - default temperature, topP, topK, maxTokens
 
-Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `PROVIDER`
+Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `OLLAMA_SYSTEM_PROMPT`, `PROVIDER`
 
 ## Docker
 

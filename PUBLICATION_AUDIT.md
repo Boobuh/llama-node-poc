@@ -36,7 +36,11 @@ Remote Drive MCP in Cursor may still fail with dynamic client registration — s
 | Mini research: teaching the model   | ✅ system prompt, Modelfile, RAG, fine-tuning decision table    |
 | Git/PR Modelfile experiment         | ✅ docs/teaching-git-mr/ — logs, screenshots, PR #1             |
 | Nice-to-have research               | ✅ JSON format, num_ctx, Docker Compose, benchmarks, fine-tune pointer |
-| npm scripts                         | ✅ benchmark:models, sync:doc                                     |
+| RAG runnable demo                   | ✅ scripts/rag-mini-demo.mjs + npm run rag:demo                     |
+| Ollama systemPrompt in POC          | ✅ config + OLLAMA_SYSTEM_PROMPT env                                |
+| CI (unit tests)                     | ✅ .github/workflows/ci.yml                                         |
+| Publication tooling committed       | ✅ scripts/, GOOGLE_DOC_SYNC.md, PUBLICATION_COMMANDS.md           |
+| npm scripts                         | ✅ benchmark, sync:doc, rag:demo, teaching:screenshots, googledocs-txt |
 | Publication files in repo         | ✅ `UKRAINIAN_PUBLICATION.md` mirrored in README + SETUP        |
 
 ---
