@@ -1,0 +1,25 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: llama-node-poc-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: llama-node-poc-app
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: llama3.2
+      PROVIDER: ollama
+    command: ["node", "dist/index.js", "basic", "--provider", "ollama"]
+    # Override for interactive chat:
+    # command: ["node", "dist/index.js", "chat", "--provider", "ollama"]
+
+volumes:
+  ollama_data:

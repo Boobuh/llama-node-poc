@@ -7,20 +7,34 @@ import {
 } from "./setup-messages";
 import type { ProviderAdapter, LlamaSession, PromptOptions } from "../types/providers";
 
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+function buildMessages(userText: string, systemPrompt?: string): ChatMessage[] {
+  const messages: ChatMessage[] = [];
+  const system = systemPrompt?.trim();
+  if (system) {
+    messages.push({ role: "system", content: system });
+  }
+  messages.push({ role: "user", content: userText });
+  return messages;
+}
+
 class OllamaSession implements LlamaSession {
   constructor(
     private readonly client: Ollama,
-    private readonly model: string
+    private readonly model: string,
+    private readonly systemPrompt?: string,
   ) {}
 
   async prompt(text: string, options: PromptOptions = {}): Promise<string> {
     const resolved = resolvePromptOptions(options, config.generation);
+    const messages = buildMessages(text, this.systemPrompt);
 
     if (options.onTextChunk) {
       let full = "";
       const stream = await this.client.chat({
         model: this.model,
-        messages: [{ role: "user", content: text }],
+        messages,
         stream: true,
         options: {
           temperature: resolved.temperature,
@@ -42,7 +56,7 @@ class OllamaSession implements LlamaSession {
 
     const response = await this.client.chat({
       model: this.model,
-      messages: [{ role: "user", content: text }],
+      messages,
       options: {
         temperature: resolved.temperature,
         num_predict: resolved.maxTokens,
@@ -79,6 +93,6 @@ export const ollamaProvider: ProviderAdapter = {
     } catch {
       throw new Error(getOllamaUnreachableMessage());
     }
-    return new OllamaSession(client, config.ollama.model);
+    return new OllamaSession(client, config.ollama.model, config.ollama.systemPrompt);
   },
 };

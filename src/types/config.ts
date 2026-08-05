@@ -50,6 +50,8 @@ export interface CliConfig {
 export interface OllamaConfig {
   host: string;
   model: string;
+  /** Optional system message prepended to every chat request */
+  systemPrompt?: string;
 }
 
 export interface AppConfig {

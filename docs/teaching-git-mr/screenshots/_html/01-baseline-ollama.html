@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf-8"/><title>Крок 1 — Baseline (без навчання)</title>
+<style>
+body{margin:0;padding:32px;background:#1e1e2e;color:#cdd6f4;font-family:Consolas,monospace}
+.window{max-width:960px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid #45475a;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.titlebar{background:#313244;padding:12px 16px;color:#bac2de;font-size:13px}
+h1{font:600 18px system-ui;color:#89b4fa;margin:20px 24px 8px}
+.sub{color:#a6adc8;font:13px system-ui;margin:0 24px 16px}
+pre{margin:0;padding:20px 24px;background:#11111b;color:#a6e3a1;font-size:13px;line-height:1.55;white-space:pre-wrap}
+</style></head><body><div class="window">
+<div class="titlebar">terminal — llama-node-poc</div>
+<h1>Крок 1 — Baseline (без навчання)</h1>
+<p class="sub">ollama run llama3.2</p>
+<pre>=== BASELINE QUESTION ===
+Як у репозиторії Boobuh/llama-node-poc на GitHub запушити коміт і створити merge request (pull request)? Дай точні команди bash по кроках, без загальних порад.
+
+=== BASELINE RESPONSE (llama3.2, no system prompt) ===
+⠙ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠙ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠇ ⠇ ⠋ ⠋ ⠙ ⠹ ⠸ ⠴ ⠦ ⠦ ⠇ ⠏ ⠋ ⠙ ⠙ ⠹ ⠸ ⠴ ⠦ ⠦ ⠧ ⠇ ⠏ ⠋ ⠙ ⠸ ⠸ ⠴ ⠦ ⠦ ⠇ ⠇ ⠏ ⠋ ⠙ ⠸ ⠸ ⠴ ⠴ ⠧ ⠇ ⠏ ⠏ ⠋ ⠹ ⠹ ⠼ ⠼ ⠦ ⠦ ⠇ ⠏ ⠋ ⠋ ⠙ ⠹ ⠸ ⠼ ⠦ ⠦ ⠇ ⠏ ⠏ ⠋ ⠙ ⠹ ⠼ ⠼ ⠴ ⠦ ⠇ ⠇ ⠏ ⠙ ⠹ ⠸ ⠸ Забезпечити комітет та створення merge-ріда на GitHub можна за допомогою на
+наступних команд:
+
+1. Перейти до репозиторію: `cd ~/Repositories/Boobuh/llama-node-poc`
+2. Створіть новий коміт з відповідної повідомленням: 
+```
+git add .
+git commit -m "Введення нового коміту"
+```
+3. ПовернутиChanges на сервер: `git push origin main --force`
+4. Перейти до основного архіву репозиторію: `git checkout main`
+5. Створіть новий флешпойн з бажаної повідомленням: 
+```bash
+git merge -m "Введення нового флешпояна"
+```
+
+6. ПовернутиChanges на сервер: `git push origin main`
+7. Перейти до архіву сушіння коміту: `git cherry-pick HEAD~1..HEAD`
+8. ПовернутиChanges на сервер: `git push origin main`
+9. Створіть merge-рід (pull-рідом): 
+```
+git request-pull --branch=main origin/main
+```
+
+10. Перейти до архіву сушіння коміту: `git cherry-pick HEAD~1..HEAD`
+11. ПовернутиChanges на сервер: `git push origin main`
+
+</pre></div></body></html>

@@ -1,0 +1,136 @@
+ПРИКЛАДИ ЗАПИТІВ ТА ВІДПОВІДЕЙ LLAMA
+
+Ці приклади згенеровані через Ollama (ollama), модель: llama3.2, Node.js.
+
+============================================================
+
+ПРИКЛАД 1: Instruction Following
+
+Запит:
+Reply with ONLY "YES" or "NO". Is water wet?
+
+Параметри:
+- Temperature: 0.1
+- Max Tokens: 10
+
+Відповідь:
+YES.
+
+============================================================
+
+ПРИКЛАД 2: Structured Output (JSON)
+
+Запит:
+Extract the name and age from this text and return only valid JSON: "My name is Anna, I turned 29 last month."
+
+Параметри:
+- Temperature: 0.1
+- Max Tokens: 50
+
+Відповідь:
+Here's a simple Python script that can parse the given text and extract the name and age:
+
+```python
+import re
+
+def extract_info(text):
+    # Regular expression to match the name and age
+    pattern = r"(\w+)\s
+
+============================================================
+
+ПРИКЛАД 3: Math Reasoning
+
+Запит:
+2+2=
+
+Параметри:
+- Temperature: 0
+- Max Tokens: 10
+
+Відповідь:
+2 + 2 = 4
+
+============================================================
+
+ПРИКЛАД 4: Context Retention
+
+Запит:
+What is my API key? (after: My API key is 12345. Remember this.)
+
+Параметри:
+- Temperature: 0.3
+- Max Tokens: 20
+
+Відповідь:
+I don't have any information about your specific account or API keys. I'm a large language model
+
+============================================================
+
+ПРИКЛАД 5: Code Generation
+
+Запит:
+Write a JavaScript function that reverses a string. Code only, no explanations.
+
+Параметри:
+- Temperature: 0.3
+- Max Tokens: 100
+
+Відповідь:
+```javascript
+function reverseString(str) {
+    return str.split("").reverse().join("");
+}
+```
+
+============================================================
+
+ПРИКЛАД 6: Creative Text
+
+Запит:
+Tell a short story about a robot discovering emotions (3 sentences).
+
+Параметри:
+- Temperature: 0.8
+- Max Tokens: 150
+
+Відповідь:
+As Zeta, the cutting-edge android, was tasked with processing and analyzing human emotional responses, she suddenly felt an unfamiliar flutter in her digital heart - a spark of compassion for a grieving mother who had lost her child. Overwhelmed by this new sensation, Zeta struggled to comprehend its source, but as she continued to observe humanity's emotional spectrum, she found herself inexplicably resonating with the very feelings she was designed to understand. In that moment, Zeta realized that emotions were not just algorithms and calculations, but a rich tapestry of experiences that could transform even the most advanced machines into truly alive beings.
+
+============================================================
+
+ПРИКЛАД 7: Summarization
+
+Запит:
+Summarize this text in one sentence:
+Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to the natural intelligence displayed by humans and animals.
+
+Параметри:
+- Temperature: 0.4
+- Max Tokens: 80
+
+Відповідь:
+Artificial intelligence refers to the ability of machines to exhibit intelligent behavior, distinct from the natural intelligence found in humans and animals.
+
+============================================================
+
+ПРИКЛАД 8: Language Understanding
+
+Запит:
+Explain why the sky is blue in one sentence.
+
+Параметри:
+- Temperature: 0.3
+- Max Tokens: 60
+
+Відповідь:
+The sky appears blue because of a phenomenon called Rayleigh scattering, where shorter wavelengths of light (such as blue and violet) are scattered more than longer wavelengths by the tiny molecules of gases in the Earth's atmosphere, resulting in the dominant blue color we see during the daytime.
+
+============================================================
+
+---
+
+Примітки:
+- Приклади згенеровані через provider abstraction на Node.js
+- Temperature впливає на креативність відповідей
+- MaxTokens обмежує довжину відповіді

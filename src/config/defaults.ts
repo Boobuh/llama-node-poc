@@ -54,6 +54,7 @@ export function applyEnvironmentOverrides(base: AppConfig): AppConfig {
     ollama: {
       host: process.env.OLLAMA_HOST ?? base.ollama.host,
       model: process.env.OLLAMA_MODEL ?? base.ollama.model,
+      systemPrompt: process.env.OLLAMA_SYSTEM_PROMPT ?? base.ollama.systemPrompt,
     },
   };
 }

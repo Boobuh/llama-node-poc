@@ -1,0 +1,7 @@
+remote: 
+remote: Create a pull request for 'docs/teach-model-git-workflow' on GitHub by visiting:        
+remote:      https://github.com/Boobuh/llama-node-poc/pull/new/docs/teach-model-git-workflow        
+remote: 
+To https://github.com/Boobuh/llama-node-poc.git
+ * [new branch]      HEAD -> docs/teach-model-git-workflow
+branch 'docs/teach-model-git-workflow' set up to track 'origin/docs/teach-model-git-workflow'.
