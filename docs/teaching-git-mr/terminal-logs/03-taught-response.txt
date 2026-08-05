@@ -1,0 +1,10 @@
+=== TAUGHT RESPONSE (llama-node-poc-git after Modelfile) ===
+⠙ ⠹ ⠸ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠋ ⠹ ⠸ ⠸ ⠼ ⠦ ⠦ ⠧ ⠇ ⠏ ⠋ ⠹ ⠹ ⠼ ⠼ ⠴ ⠧ ⠇ ⠇ ⠏ ⠙ ⠹ ⠹ ⠼ ⠴ ⠴ ⠦ ⠧ ⠇ ⠏ ⠙ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠏ ⠋ ⠋ ⠙ ⠸ ⠸ ⠼ ⠴ ⠧ ⠧ ⠏ ⠋ ⠋ ⠹ ⠹ ⠼ ⠼ ⠦ ⠦ ⠧ ⠏ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠦ ⠇ ⠏ ⠋ ⠙ ⠹ ⠹ ⠸ ⠴ ⠦ ⠦ ⠇ ⠇ ⠏ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠙ ⠹ ⠸ ⠸ ⠼ ⠴ ⠦ ⠇ ⠏ ⠏ ⠙ ⠹ ⠸ ⠸ ⠼ ⠴ ⠦ ⠧ ⠏ ⠏ ⠋ ⠙ ⠹ ⠼ ⠼ ⠴ ⠦ ⠧ ⠇ ⠋ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠋ ⠋ ⠙ ⠸ ⠸ ⠴ ⠴ ⠧ ⠇ ⠇ ⠋ ⠙ ⠙ ⠸ ⠼ ⠴ ⠴ ⠧ ⠇ ⠇ ⠏ ⠋ ⠹ 1. `git status && git remote -v`
+2. `git checkout -b feat/my-change` (заміни на гілку для коміту)
+3. `git add .` (додай всі зміни до індекса)
+4. `git commit -m "docs: describe my change"` (запишите коментар до коміту)
+коміту)
+5. `git push -u origin HEAD` (запушити коміт на remote)
+6. `gh pr create --title "docs: describe my change" --body "## Summary\n- c
+change\n\n## Test plan\n- [ ] reviewed"` (створіть Pull Request на GitHub)
+

@@ -1,0 +1,3 @@
+=== Step 06: Push branch to origin ===
+Command: git push -u origin HEAD
+---

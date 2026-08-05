@@ -1,0 +1,3 @@
+=== Step 04: Stage teaching experiment files ===
+Command: git add docs/teaching-git-mr ...
+---

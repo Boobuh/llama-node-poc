@@ -1,0 +1,5 @@
+=== Step 02: Verify remote ===
+Command: git remote -v
+---
+origin	https://github.com/Boobuh/llama-node-poc.git (fetch)
+origin	https://github.com/Boobuh/llama-node-poc.git (push)
