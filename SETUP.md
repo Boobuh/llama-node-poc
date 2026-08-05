@@ -166,6 +166,8 @@ npm run dev -- basic --provider llama-node
 | `npm run test:quick`        | Fast connectivity test                      |
 | `npm run test`              | Full regression suite (31 tests, ~5-10 min) |
 | `npm run generate:examples` | Regenerate article example outputs          |
+| `npm run benchmark:models`  | Latency: tinyllama vs llama3.2 + JSON test  |
+| `npm run sync:doc`          | Sync `UKRAINIAN_PUBLICATION.md` → Google Doc |
 | `npm run build`             | Compile TypeScript to `dist/`               |
 
 ## Library choice
@@ -191,6 +193,16 @@ Environment: `OLLAMA_HOST`, `OLLAMA_MODEL`, `PROVIDER`
 ## Docker
 
 `Dockerfile` builds the Node.js app only. Install and run Ollama separately; point the app with `OLLAMA_HOST` (e.g. `http://host.docker.internal:11434`).
+
+**Docker Compose** (recommended for local sidecar):
+
+```bash
+docker compose up -d ollama
+docker compose exec ollama ollama pull llama3.2
+docker compose up --build app
+```
+
+App service uses `OLLAMA_HOST=http://ollama:11434`. Model data persists in Docker volume `ollama_data`.
 
 ## Optional extensions
 

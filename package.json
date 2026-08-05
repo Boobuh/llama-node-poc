@@ -18,7 +18,9 @@
     "test:quick": "tsx src/tests/quick-test.ts",
     "test:unit": "node --import tsx --test 'src/**/*.test.ts'",
     "test:providers": "tsx src/tests/providers-test.ts",
-    "generate:examples": "tsx src/tests/generate-examples.ts"
+    "generate:examples": "tsx src/tests/generate-examples.ts",
+    "benchmark:models": "node scripts/benchmark-models.mjs",
+    "sync:doc": "node scripts/sync-google-doc-rich.mjs"
   },
   "keywords": [
     "llama",
@@ -42,6 +44,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "googleapis": "^173.0.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",

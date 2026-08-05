@@ -1,0 +1,23 @@
+# Model benchmarks — 2026-08-06T00:00:00.000Z (local run)
+Host: http://127.0.0.1:11434
+Prompt: Say hello in one sentence.
+
+## tinyllama
+runs_ms: 19045, 14051, 13956
+cold_ms: 19045
+warm_avg_ms: 14004
+
+## llama3.2
+runs_ms: 16528, 6270, 6781
+cold_ms: 16528
+warm_avg_ms: 6526
+
+## format: json (llama3.2)
+valid_json: true
+latency_ms: 21378
+sample: {"name":"Anna","age":29}
+
+Notes:
+- First run includes model load (cold start) — use warm_avg_ms for steady-state.
+- Hardware-dependent; re-run: npm run benchmark:models
+- JSON via `format: "json"` is more reliable than prompt-only JSON on llama3.2.

@@ -12,8 +12,8 @@
 
 ### Google Drive MCP status
 
-**Not connected** — error: `Incompatible auth server: does not support dynamic client registration`.  
-Re-auth in Cursor Settings → MCP → google-drive, then paste manually or retry `read_file_content`.
+**Sync via script:** `npm run sync:doc` (uses local OAuth in `~/.config/google-workspace-mcp/`).  
+Remote Drive MCP in Cursor may still fail with dynamic client registration — see `GOOGLE_DOC_SYNC.md`.
 
 ---
 
@@ -35,6 +35,8 @@ Re-auth in Cursor Settings → MCP → google-drive, then paste manually or retr
 | `jq` optional in HTTP API example | ✅ step 6 — raw JSON without jq                                 |
 | Mini research: teaching the model   | ✅ system prompt, Modelfile, RAG, fine-tuning decision table    |
 | Git/PR Modelfile experiment         | ✅ docs/teaching-git-mr/ — logs, screenshots, PR #1             |
+| Nice-to-have research               | ✅ JSON format, num_ctx, Docker Compose, benchmarks, fine-tune pointer |
+| npm scripts                         | ✅ benchmark:models, sync:doc                                     |
 | Publication files in repo         | ✅ `UKRAINIAN_PUBLICATION.md` mirrored in README + SETUP        |
 
 ---

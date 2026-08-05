@@ -17,7 +17,7 @@
 | **Ollama**     | `ollama`     | Ollama server + `ollama pull llama3.2` |
 | **llama-node** | `llama-node` | Локальний `.gguf` файл (legacy)        |
 
-> **Верифіковано:** червень 2026 — `ollama@0.6.3`, `llama-node@0.1.6`, Node.js v22.
+> **Верифіковано:** серпень 2026 — `ollama@0.6.3`, `llama-node@0.1.6`, Node.js v22.
 
 ## Початок з нуля (Ollama + Node.js)
 
@@ -493,6 +493,16 @@ Fine-tuning (наприклад Unsloth + QLoRA на GPU) **змінює ваг�
 - одна й та сама задача виконується тисячі разів (окупається складність).
 
 Для більшості backend POC достатньо **system prompt + RAG**.
+
+**Коли fine-tuning НЕ варто:**
+
+- Достатньо змінити тон або формат → Modelfile / system prompt
+- Потрібні актуальні документи → RAG, не тренування
+- Менше ~200 якісних прикладів → модель переобучиться або не стабілізується
+- Задача часто змінюється → fine-tuned вага «застаріває»
+- Немає GPU / часу на eval → почніть з prompt + regression tests
+
+Корисні посилання (без запуску в POC): [Unsloth](https://github.com/unslothai/unsloth), [Ollama ADAPTER](https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx), [Collabnix fine-tune + Ollama guide](https://collabnix.com/how-to-fine-tune-llm-and-use-it-with-ollama-a-complete-guide-for-2025/).
 
 ### Практичний висновок
 
@@ -1161,6 +1171,24 @@ CMD ["node", "dist/index.js"]
 
 Ollama server — окремий контейнер або managed service.
 
+### Docker Compose (Node.js + Ollama sidecar)
+
+У репозиторії є `docker-compose.yml` — два сервіси: **ollama** і **app** (Node.js POC).
+
+```bash
+# 1. Запустити Ollama + підтягнути модель (перший раз)
+docker compose up -d ollama
+docker compose exec ollama ollama pull llama3.2
+
+# 2. Зібрати і запустити Node.js застосунок
+docker compose up --build app
+
+# 3. Інтерактивний чат (override command)
+docker compose run --rm app node dist/index.js chat --provider ollama
+```
+
+`app` отримує `OLLAMA_HOST=http://ollama:11434` — без `host.docker.internal`. Дані моделей зберігаються у volume `ollama_data`.
+
 ### Handler для Lambda (Ollama client)
 
 ```typescript
@@ -1271,6 +1299,98 @@ for await (const chunk of stream) {
 const duration = Date.now() - startTime;
 metrics.recordLatency(duration);
 ```
+
+## Додаткові дослідження (nice-to-have)
+
+Нижче — теми, які не обов’язкові для першого запуску, але корисні для production-minded backend і статті.
+
+### 1. Structured output (`format: "json"`)
+
+Замість «поверни JSON» у prompt Ollama підтримує **`format: "json"`** — модель обмежена валідним JSON на рівні API ([документація](https://github.com/ollama/ollama/blob/main/docs/api.md)).
+
+```typescript
+import { Ollama } from "ollama";
+
+const client = new Ollama();
+
+const { message } = await client.chat({
+  model: "llama3.2",
+  messages: [
+    {
+      role: "user",
+      content:
+        'Extract name and age from: "My name is Anna, I turned 29 last month."',
+    },
+  ],
+  format: "json",
+  options: { temperature: 0.1, num_predict: 80 },
+});
+
+const data = JSON.parse(message.content) as { name: string; age: number };
+console.log(data);
+```
+
+**Порівняно з prompt-only JSON** (як у regression suite POC): `format: "json"` на `llama3.2` стабільніше; `tinyllama` все одно може ламати схему — тестуйте на цільовій моделі.
+
+Перевірка + парсинг:
+
+```typescript
+function parseModelJson<T>(raw: string): T {
+  const trimmed = raw.trim();
+  return JSON.parse(trimmed) as T;
+}
+```
+
+### 2. Context window (`num_ctx`) і історія чату
+
+Кожен токен у `messages[]` займає місце в **context window**. Якщо історія + system prompt + документи перевищують ліміт — старі повідомлення **обрізаються** (модель «забуває» початок діалогу).
+
+| Де задати | Приклад |
+| --------- | ------- |
+| Modelfile | `PARAMETER num_ctx 8192` |
+| API | `options: { num_ctx: 8192 }` |
+| Ollama env | `OLLAMA_NUM_CTX=8192` |
+
+**Практика для Node.js:**
+
+- тримайте system prompt коротким (< ~2000 слів);
+- для RAG — лише top‑K chunks, не весь PDF;
+- довга історія чату → підсумовуйте старі повідомлення окремим викликом або зберігайте в БД і передавайте скорочений контекст.
+
+```typescript
+const { message } = await client.chat({
+  model: "llama3.2",
+  messages: history, // user + assistant попередніх turns
+  options: { num_ctx: 8192, num_predict: 200 },
+});
+```
+
+У POC regression suite є тести context retention — на `tinyllama` часто **FAIL**; на `llama3.2` — краще.
+
+### 3. Docker Compose — локальний «production-like» stack
+
+Див. розділ «Docker Compose» вище та файл `docker-compose.yml` у репозиторії. Це найпростіший спосіб показати **sidecar pattern**: inference окремо, Node.js — thin client.
+
+### 4. Latency: `tinyllama` vs `llama3.2`
+
+Заміряно локально (CPU, Ollama на `localhost:11434`, серпень 2026). Повторити:
+
+```bash
+npm run benchmark:models
+# → docs/research/benchmarks-latest.txt
+```
+
+| Модель | Cold start (1-й запит) | Warm avg (2–3 запити) | Примітка |
+| ------ | ---------------------- | --------------------- | -------- |
+| `tinyllama` | ~19 s | ~14 s | менша модель, але не завжди швидша після cold start |
+| `llama3.2` | ~17 s | ~6.5 s | краща якість; warm latency нижча на тестовому CPU |
+| `llama3.2` + `format: "json"` | — | ~21 s | валідний JSON у тестовому run |
+
+**Висновок для статті:** `tinyllama` — для швидких connectivity-тестів у CI; `llama3.2` — для демо якості та structured output. Цифри залежать від CPU/GPU — завжди публікуйте `benchmarks-latest.txt` з вашого заліза.
+
+### 5. Fine-tuning — короткий pointer
+
+Fine-tuning має сенс **після** Modelfile + RAG + regression tests. Якщо pass rate не росте — див. розділ «Fine-tuning / LoRA» і блок «Коли fine-tuning НЕ варто» вище. У цьому POC ми **не** запускаємо QLoRA — достатньо Modelfile-експерименту ([git/PR teaching](docs/teaching-git-mr/README.md)).
 
 ## Що це дозволяє зробити?
 

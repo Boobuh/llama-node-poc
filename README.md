@@ -225,6 +225,24 @@ const text = await session.prompt("Hello!");
 
 The `Dockerfile` builds only the Node.js app. Run **Ollama on the host or as a sidecar** and set `OLLAMA_HOST` (e.g. `http://host.docker.internal:11434` on macOS/Windows).
 
+**Docker Compose** (Node app + Ollama sidecar):
+
+```bash
+docker compose up -d ollama
+docker compose exec ollama ollama pull llama3.2
+docker compose up --build app
+```
+
+See [`docker-compose.yml`](docker-compose.yml). Publication covers structured JSON output, `num_ctx`, benchmarks, and fine-tuning pointers in **Додаткові дослідження (nice-to-have)**.
+
+## Research extras
+
+| Topic | Command / file |
+| ----- | -------------- |
+| Model latency benchmarks | `npm run benchmark:models` → `docs/research/benchmarks-latest.txt` |
+| Sync publication to Google Doc | `npm run sync:doc` |
+| Teach model (git/PR experiment) | [`docs/teaching-git-mr/README.md`](docs/teaching-git-mr/README.md) |
+
 ## License
 
 ISC
