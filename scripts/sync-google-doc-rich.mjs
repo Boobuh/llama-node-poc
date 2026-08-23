@@ -15,7 +15,7 @@ import {
 } from "./lib/markdown-to-google-docs.mjs";
 
 const DOC_ID = process.env.GOOGLE_DOC_ID ?? "18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw";
-const SOURCE = join(process.cwd(), "UKRAINIAN_PUBLICATION.md");
+const SOURCE = join(process.cwd(), "docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md");
 const CREDS = join(homedir(), ".config/google-workspace-mcp/credentials.json");
 const TOKENS = join(homedir(), ".config/google-workspace-mcp/tokens.json");
 const BLOCKS_PER_BATCH = 6;

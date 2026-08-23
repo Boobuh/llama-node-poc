@@ -1,6 +1,6 @@
 # Команди для української публікації
 
-Джерело правди: `UKRAINIAN_PUBLICATION.md`  
+Джерело правди: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (stub: `UKRAINIAN_PUBLICATION.md`)  
 Google Doc: https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit
 
 ## 1. Ollama (перед тестами / прикладами)
@@ -54,6 +54,7 @@ npm run build
 
 ```bash
 git add UKRAINIAN_PUBLICATION.md \
+        docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md \
         UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt \
         README.md SETUP.md \
         GOOGLE_DOC_SYNC.md PUBLICATION_AUDIT.md PUBLICATION_COMMANDS.md \
@@ -86,7 +87,8 @@ node scripts/sync-google-doc-rich.mjs
 
 | Файл                                      | Призначення                              |
 | ----------------------------------------- | ---------------------------------------- |
-| `UKRAINIAN_PUBLICATION.md`                | Стаття (markdown, source of truth)       |
+| `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` | Повний драфт (DOU, source of truth)     |
+| `UKRAINIAN_PUBLICATION.md`                | Stub — посилання на DOU / draft           |
 | `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`    | Plain-text для ручного paste             |
 | `EXAMPLES_OUTPUT.txt`                     | Згенеровані приклади промптів/відповідей |
 | `EXAMPLES_FOR_ARTICLE.md`                 | Чернетка прикладів                       |

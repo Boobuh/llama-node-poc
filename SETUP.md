@@ -1,6 +1,9 @@
 # Llama Node.js POC — Setup Guide
 
-Full from-zero article (Ukrainian): [`UKRAINIAN_PUBLICATION.md`](UKRAINIAN_PUBLICATION.md)
+DOU article stub: [`UKRAINIAN_PUBLICATION.md`](UKRAINIAN_PUBLICATION.md)  
+Author draft (not for republish): [`docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md`](docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md)
+
+> Канонічна версія — на DOU після модерації. Google Doc — лише owner/editor.
 
 ## What's in this repo
 
@@ -8,7 +11,8 @@ TypeScript proof of concept for running **Llama from Node.js** via **Ollama** (r
 
 ```
 llama-node-poc/
-├── UKRAINIAN_PUBLICATION.md      # Publication source (Ukrainian)
+├── UKRAINIAN_PUBLICATION.md      # DOU stub (canonical text → DOU after publish)
+├── docs/dou/                     # Author draft for moderation (not for republish)
 ├── src/
 │   ├── index.ts                  # CLI entry point
 │   ├── config.ts                 # Model and generation settings
@@ -167,7 +171,7 @@ npm run dev -- basic --provider llama-node
 | `npm run test`              | Full regression suite (31 tests, ~5-10 min) |
 | `npm run generate:examples` | Regenerate article example outputs          |
 | `npm run benchmark:models`  | Latency: tinyllama vs llama3.2 + JSON test  |
-| `npm run sync:doc`          | Sync `UKRAINIAN_PUBLICATION.md` → Google Doc |
+| `npm run sync:doc`          | Sync `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` → Google Doc |
 | `npm run sync:googledocs-txt` | Regenerate `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt` |
 | `npm run rag:demo`          | Minimal RAG demo (needs nomic-embed-text)   |
 | `npm run teaching:screenshots` | Regenerate teaching experiment PNGs        |

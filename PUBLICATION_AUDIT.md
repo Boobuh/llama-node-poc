@@ -6,7 +6,7 @@
 | ------------ | ------------------------------------------------------------------------------------ |
 | URL          | https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit |
 | File ID      | `18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw`                                       |
-| Local source | `UKRAINIAN_PUBLICATION.md`                                                           |
+| Local source | `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (stub: `UKRAINIAN_PUBLICATION.md`) |
 | Paste copy   | `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`                                               |
 | Regenerate   | `npx tsx src/tests/md-to-googledocs.ts`                                              |
 
@@ -41,11 +41,27 @@ Remote Drive MCP in Cursor may still fail with dynamic client registration — s
 | CI (unit tests)                     | ✅ .github/workflows/ci.yml                                         |
 | Publication tooling committed       | ✅ scripts/, GOOGLE_DOC_SYNC.md, PUBLICATION_COMMANDS.md           |
 | npm scripts                         | ✅ benchmark, sync:doc, rag:demo, teaching:screenshots, googledocs-txt |
-| Publication files in repo         | ✅ `UKRAINIAN_PUBLICATION.md` mirrored in README + SETUP        |
+| DOU author intro + first person      | ✅ «Про автора», «Я перевірив», особистий висновок              |
+| Reduced repo self-promotion           | ✅ один блок «Код і додаткові матеріали»; без inline GitHub URL   |
+| Uniqueness note                       | ✅ stub on GitHub; draft in `docs/dou/`; Google Doc owner+editor only |
+| AI tone mitigation                    | ⚠️ автор має вручну пройтися перед submit (DOU правило)          |
 
 ---
 
-## Action for Google Doc
+## DOU editorial compliance (Aug 2026)
+
+| Criterion | Status | Notes |
+| --------- | ------ | ----- |
+| Author intro («Мене звати…») | ✅ | Section «Про автора і для кого ця стаття» |
+| First-person voice | ✅ | ~54 first-person markers; handbook «ви» removed except audience list |
+| Own experience | ✅ | Git/PR Modelfile experiment, benchmarks, regression suite framed as personal |
+| Unique (first publication) | ⚠️ | Text marked «вперше для DOU»; **restrict Google Doc sharing** before submit |
+| Not AI-generated prose | ⚠️ | Author must manual pass before submit (DOU policy) |
+| No hidden promotion | ✅ | Single «Код і додаткові матеріали» block; no inline Boobuh URLs |
+
+**Before DOU submit:** Google Doc restricted to owner + editor (domain sharing removed Aug 2026). After DOU publish, add DOU URL to `UKRAINIAN_PUBLICATION.md` stub.
+
+---
 
 1. Title: **Як використовувати Llama з Node.js: Ollama та llama-node**
 2. Body: paste `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`

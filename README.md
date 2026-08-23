@@ -7,7 +7,7 @@ Run **Llama models from Node.js/TypeScript** using either backend:
 | **ollama** (default) | `ollama`     | [Ollama](https://ollama.com) server | Pure Node.js client, easy setup |
 | **llama-node**       | `llama-node` | Local `.gguf` file                  | Classic Node.js in-process API  |
 
-**Publication (Ukrainian, from-zero guide):** [`UKRAINIAN_PUBLICATION.md`](UKRAINIAN_PUBLICATION.md)
+**Publication (Ukrainian, DOU):** [`UKRAINIAN_PUBLICATION.md`](UKRAINIAN_PUBLICATION.md) — stub; повний драфт у [`docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md`](docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md) (перша публікація на [DOU](https://dou.ua/)).
 
 **Can you teach the model?** Yes — but it depends: system prompts and [Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx) change behavior without retraining; RAG injects your documents at query time; fine-tuning/LoRA changes weights for high-volume domain tasks. See the mini-research section in the publication.
 

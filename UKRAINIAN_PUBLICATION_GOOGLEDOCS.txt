@@ -1,23 +1,33 @@
 ЯК ВИКОРИСТОВУВАТИ LLAMA З NODE.JS: OLLAMA ТА LLAMA-NODE
 
+ПРО АВТОРА І ДЛЯ КОГО ЦЯ СТАТТЯ
+
+Мене звати Oleh Helei, я Node.js/TypeScript-розробник. Цей текст я готую вперше для публікації на DOU — це мій особистий досвід, а не переклад офіційної документації. Текст на GitHub і в Google Doc — робочий драфт для модерації, не дублікат для інших медіа; канонічна публікація буде на DOU.
+
+Стаття буде корисна, якщо ви:
+
+• хочете локально запустити Llama з Node.js без C++ у своєму застосунку;
+• плутаєте Ollama server і npm-пакет `ollama`;
+• шукаєте практичні кроки: install → перший запит → тести → «навчити» модель через Modelfile.
+
+Я описую шлях, який сам пройшов у серпні 2026 на Node.js v22, `ollama@0.6.3` і pet-проєкті llama-node-poc. Код з репозиторію — лише додаток до статті; усе необхідне для старту є нижче в тексті.
+
 ВСТУП
 
-Ця стаття показує, як запустити Llama з Node.js з нуля — без готового фреймворку та без прив’язки до конкретного репозиторію.
+Кілька тижнів тому я з нуля збирав стек Llama + Node.js і швидко зрозумів: найменше болі дає Ollama (окремий сервер) + npm `ollama` (HTTP-клієнт). In-process llama-node з GGUF лишив для порівняння — там інші обмеження.
 
-Ви дізнаєтесь:
+У статті розповім:
 
-1. Як встановити Ollama і викликати модель із Node.js через npm-пакет `ollama` (рекомендований шлях).
-2. Як спробувати llama-node з локальним GGUF (legacy, для дослідження in-process API).
-3. Які патерни регресійного тестування показані в прикладі llama-node-poc.
-
-> Приклад репозиторію: llama-node-poc (https://github.com/Boobuh/llama-node-poc) — наш дослідницький POC з CLI, тестами та provider abstraction. Він не є обов’язковою залежністю; код нижче працює у будь-якому новому проєкті.
+1. Як я встановлював Ollama і викликав модель з Node.js.
+2. Чому llama-node сьогодні радше legacy для досліджень.
+3. Як я зібрав regression suite і навіщо він потрібен для LLM backend.
 
 | Підхід         | npm-пакет    | Що потрібно                            |
 | -------------- | ------------ | -------------------------------------- |
 | Ollama     | `ollama`     | Ollama server + `ollama pull llama3.2` |
 | llama-node | `llama-node` | Локальний `.gguf` файл (legacy)        |
 
-> Верифіковано: серпень 2026 — `ollama@0.6.3`, `llama-node@0.1.6`, Node.js v22.
+> Перевірив особисто: серпень 2026 — `ollama@0.6.3`, `llama-node@0.1.6`, Node.js v22 на Linux.
 
 ПОЧАТОК З НУЛЯ (OLLAMA + NODE.JS)
 
@@ -63,9 +73,9 @@ Ollama server — окремий додаток inference (ollama.com/download (
 | Що                | Тип                        | Як ставиться                          | Роль                                                               |
 | ----------------- | -------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
 | Ollama server | Системний сервіс / додаток | Інсталятор з ollama.com               | Завантажує GGUF, тримає модель у пам’яті, API на `localhost:11434` |
-| npm `ollama`  | JavaScript пакет           | `npm install ollama` у вашому проєкті | HTTP-клієнт з Node.js до сервера                                   |
+| npm `ollama`  | JavaScript пакет           | `npm install ollama` у проєкті        | HTTP-клієнт з Node.js до сервера                                   |
 
-Node.js не завантажує модель сам — лише викликає API сервера. Назва моделі в коді (`llama3.2`, `tinyllama`) має збігатися з тим, що ви вже зробили `ollama pull`.
+Node.js не завантажує модель сам — я це перевірив — лише викликає API сервера. Назва моделі в коді (`llama3.2`, `tinyllama`) має збігатися з тим, що я вже зробив через `ollama pull`.
 
 3. Встановити Ollama server
 
@@ -92,7 +102,7 @@ Windows: інсталятор з ollama.com/download (https://ollama.com/downloa
 
 ```bash
 
-ДЛЯ ДЕМО В ЦЬОМУ POC (DEFAULT У CONFIG.TS)
+ДЛЯ ДЕМО В ЦЬОМУ PET-ПРОЄКТІ (DEFAULT У CONFIG.TS)
 
 ollama pull llama3.2
 
@@ -101,7 +111,7 @@ ollama pull llama3.2
 ollama pull tinyllama
 ```
 
-Мінімум для тільки тестів POC: `tinyllama`. Для демо без env — також `llama3.2`, або задайте `OLLAMA_MODEL=tinyllama` для однієї моделі на все.
+Мінімум для тільки тестів у моєму pet-проєкті: `tinyllama`. Для демо без env я також тягну `llama3.2`, або ставлю `OLLAMA_MODEL=tinyllama` для однієї моделі на все.
 
 5. Перевірити, що Ollama працює
 
@@ -111,22 +121,22 @@ ollama list
 curl -s http://127.0.0.1:11434/api/tags | head
 ```
 
-Очікування: `ollama list` показує завантажені моделі; `curl` повертає JSON з `"models"`.
+У мене вийшло так: `ollama list` показує завантажені моделі; `curl` повертає JSON з `"models"`.
 
 Якщо щось не працює:
 
 | Симптом                                   | Рішення                                                                                      |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `curl: Connection refused` на `:11434`    | Запустіть сервер: `ollama serve` (окремий термінал або системний сервіс)                     |
+| `curl: Connection refused` на `:11434`    | Я запускаю сервер: `ollama serve` (окремий термінал або системний сервіс)                     |
 | `model not found` / `404` у Node.js       | `ollama pull <ім'я моделі>` — ім’я в коді має збігатися з `ollama list`                      |
-| `ollama: command not found` після install | Перезапустіть термінал; перевірте `ollama --version`                                         |
-| Порт 11434 зайнятий                       | `OLLAMA_HOST=http://127.0.0.1:11435 ollama serve` і оновіть host у клієнті                   |
+| `ollama: command not found` після install | Я перезапускаю термінал; далі перевіряю `ollama --version`                                         |
+| Порт 11434 зайнятий                       | `OLLAMA_HOST=http://127.0.0.1:11435 ollama serve` і оновлю host у клієнті                   |
 
 Windows: нативний інсталятор або WSL2 з Linux-інструкцією вище. `curl` є в PowerShell / Windows 10+.
 
 6. Перший запит однією командою (термінал)
 
-Перед Node.js можна одразу надіслати промпт і отримати відповідь у терміналі — без npm, TypeScript чи `git clone`:
+Спочатку я перевіряю в терміналі — без npm надіслати промпт і отримати відповідь у терміналі — без npm, TypeScript чи `git clone`:
 
 ```bash
 ollama run tinyllama "Say hello in one sentence."
@@ -138,7 +148,7 @@ ollama run tinyllama "Say hello in one sentence."
 "Say Hello in One Sentence"
 ```
 
-Для якіснішої відповіді використовуйте більшу модель:
+Для якіснішої відповіді я перемикаюся на більшу модель:
 
 ```bash
 ollama run llama3.2 "Explain Node.js in one sentence."
@@ -158,7 +168,7 @@ applications with non-blocking I/O.
 ollama run llama3.2
 ```
 
-HTTP API (те саме через `curl`, якщо потрібен JSON). `jq` необов’язковий — без нього ви побачите сирий JSON:
+HTTP API (те саме через `curl`, якщо потрібен JSON). `jq` необов’язковий — без нього в терміналі лишається сирий JSON:
 
 ```bash
 curl -s http://127.0.0.1:11434/api/chat -d '{
@@ -173,7 +183,7 @@ curl -s http://127.0.0.1:11434/api/chat -d '{
 
 ```
 
-> Підказка: `ollama run` — найпростіший спосіб перевірити модель. Далі — Node.js клієнт (`npm install ollama`) для інтеграції в код.
+> Як я роблю: `ollama run` — найпростіший спосіб перевірити модель. Потім підключаю Node.js клієнт (`npm install ollama`).
 
 7. Створити новий Node.js проєкт
 
@@ -235,7 +245,7 @@ console.log(message.content);
 npx tsx index.ts
 ```
 
-Це весь мінімальний шлях: Ollama server + npm `ollama` + ваш TypeScript файл. Жодного `git clone` не потрібно.
+Це весь мінімальний шлях, який я перевірив: Ollama server + npm `ollama` + один TypeScript файл. Жодного `git clone` не потрібно.
 
 9. Streaming (з нуля)
 
@@ -317,7 +327,7 @@ const result = await llm.createCompletion(
 console.log(result.tokens.join(""));
 ```
 
-> Примітка: `llama-node@0.1.6` може не завантажити сучасні GGUF v2. Для поточних моделей використовуйте Ollama.
+> Примітка: `llama-node@0.1.6` у мене не підняв сучасні GGUF v2 — після цього я лишив Ollama для всіх нових експериментів.
 
 ЕКОСИСТЕМА NODE.JS LLM (АКТУАЛЬНИЙ СТАН)
 
@@ -327,22 +337,17 @@ console.log(result.tokens.join(""));
 | `llama-node`            | 0.1.6 (травень 2023) | Архівований  | Репозиторій Atome-FE/llama-node (https://github.com/Atome-FE/llama-node) закритий; сучасні GGUF можуть не завантажитись |
 | `@llama-node/llama-cpp` | 0.1.6                | Застарілий   | Backend для llama-node, також не підтримується                                                                           |
 
-Висновок: для нових проєктів у 2026 році обирайте Ollama + npm `ollama`. `llama-node` залишився цікавим історичним POC для дослідження in-process інференсу.
+Мій висновок: для нових проєктів у 2026 році я обираю Ollama + npm `ollama`. `llama-node` залишився у мене як цікавий історичний експеримент з in-process інференсу.
 
 ТЕХНОЛОГІЧНИЙ СТЕК
 
-Ollama — рекомендований підхід
+Ollama — те, на чому я зупинився
 
-Ollama — це окремий сервер inference; Node.js лише HTTP-клієнт:
+Ollama я сприймаю як окремий сервер inference, а Node.js — лише HTTP-клієнт. Мені це зайшло тому, що в застосунку немає C++ біндингів, моделі оновлюються через `ollama pull`, а streaming і chat API працюють «з коробки» на Llama 3.x.
 
-• Чистий Node.js клієнт (`ollama` npm) без нативних C++ біндингів у вашому коді
-• Ollama server керує моделями, квантизацією та GPU
-• Підтримує streaming, chat API, сучасні моделі (Llama 3.x, Qwen, Mistral тощо)
-• Простий локальний setup: `ollama pull` (+ `ollama serve` лише якщо API не відповідає)
+Приклад архітектури (як я структурував pet-проєкт)
 
-Приклад архітектури (репозиторій llama-node-poc)
-
-Якщо потрібен готовий POC з CLI, тестами та provider abstraction — дивіться llama-node-poc (https://github.com/Boobuh/llama-node-poc). Структура для орієнтиру:
+Коли мені знадобився CLI і provider abstraction, я виніс код у llama-node-poc. Структура, до якої я прийшов після кількох ітерацій:
 
 ```
 ├── src/
@@ -368,7 +373,7 @@ Ollama — це окремий сервер inference; Node.js лише HTTP-к�
 
 ДОВІДКА: API OLLAMA З NODE.JS
 
-Нижче — типові сценарії без сторонніх обгорток. Усі фрагменти працюють у новому проєкті після кроків із розділу «Початок з нуля».
+Нижче — сценарії, які я використовую без сторонніх обгорток. Усі фрагменти працюють у новому проєкті після кроків із розділу «Початок з нуля».
 
 Базовий chat
 
@@ -412,20 +417,20 @@ rl.close();
 
 МІНІ-ДОСЛІДЖЕННЯ: ЧИ МОЖНА «НАВЧИТИ» МОДЕЛЬ ЧОМУСЬ?
 
-Коротка відповідь: так — але слово «навчити» в LLM означає різні речі. Для Node.js + Ollama практичний порядок такий: system prompt → Modelfile → RAG → fine-tuning.
+Коли я збирав pet-проєкт, мене цікавило одне: чи можна «навчити» llama3.2 чомусь корисному без fine-tune на GPU? Коротка відповідь — так, але «навчити» тут означає різні речі. Практичний порядок, який я перевірив на Node.js + Ollama: system prompt → Modelfile → RAG → fine-tuning.
 
-| Що хочете змінити                         | Підхід                      | Змінює ваги моделі? | Коли обирати                                      |
+| Що мені потрібно було змінити              | Підхід                      | Змінює ваги моделі? | Коли я обрав цей шлях                             |
 | ----------------------------------------- | --------------------------- | ------------------- | ------------------------------------------------- |
 | Стиль, роль, формат відповіді             | System prompt у `chat`  | Ні                  | Перший крок; швидко, без додаткових інструментів  |
 | Те саме, але «запечене» в локальну модель | Modelfile + `ollama create` | Ні              | Одна persona/політика для всієї команди           |
 | Знання з PDF, wiki, вашої БД              | RAG (embeddings + пошук) | Ні               | Документи оновлюються; не влізають у context      |
 | Стабільна поведінка на сотнях прикладів   | Fine-tuning / LoRA      | Так                 | Лише якщо prompt + RAG не дають потрібної якості  |
 
-> Важливо: одне повідомлення в чаті («запам’ятай, що…») не навчає модель назавжди. Після нової сесії або перезапуску сервера це зникає, якщо ви не передаєте контекст знову або не використовуєте RAG / fine-tune.
+> Важливо (я на цьому спотикався): одне повідомлення в чаті («запам’ятай, що…») не навчає модель назавжди. Після нової сесії або перезапуску сервера це зникає — якщо не передати контекст знову або не підключити RAG / fine-tune.
 
-1. System prompt (найпростіше — вже в Node.js)
+1. System prompt (найпростіше — те, що я додав у провайдер)
 
-Модель не «запам’ятовує» інструкцію між перезапусками, але дотримується її в межах запиту (і діалогу, якщо ви передаєте історію `messages`).
+Я перевірив: модель не «запам’ятовує» інструкцію між перезапусками, але дотримується її в межах запиту, якщо я передаю `role: "system"` або історію `messages`.
 
 ```typescript
 import { Ollama } from "ollama";
@@ -484,9 +489,9 @@ ollama run node-reviewer "Переглянь цей middleware на витоки
 2. Розбити документи на chunks → отримати вектори → зберегти (Chroma, pgvector, LanceDB, …)
 3. На запит: знайти top‑K chunks → додати їх у `user` або `system` message → `client.chat()`
 
-RAG не змінює llama3.2; ви підставляєте актуальний контекст на кожен запит. Це стандарт для приватних баз знань у 2026 році.
+RAG не змінює llama3.2; я просто підставляю актуальний контекст на кожен запит. Для приватних баз знань у 2026 році це мій стандартний шлях.
 
-Runnable demo у POC:
+Демо, яке я зібрав у pet-проєкті:
 
 ```bash
 ollama pull nomic-embed-text
@@ -498,7 +503,7 @@ npm run rag:demo -- "Which model do tests use?"
 
 4. Fine-tuning / LoRA — справжнє «навчання», але важче
 
-Fine-tuning (наприклад Unsloth + QLoRA на GPU) змінює ваги під ваш датасет (тон, формат JSON, доменна термінологія). Потім:
+Fine-tuning (наприклад Unsloth + QLoRA на GPU) змінює ваги під конкретний датасет (тон, формат JSON, доменна термінологія). Потім:
 
 • конвертувати в GGUF або LoRA adapter;
 • у Modelfile: `FROM llama3.2` + `ADAPTER ./my-lora` (документація ADAPTER (https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx)).
@@ -509,7 +514,7 @@ Fine-tuning (наприклад Unsloth + QLoRA на GPU) змінює ваги 
 • system prompt і RAG дають нестабільний результат;
 • одна й та сама задача виконується тисячі разів (окупається складність).
 
-Для більшості backend POC достатньо system prompt + RAG.
+Для мого backend pet-проєкту вистачило system prompt + RAG.
 
 Коли fine-tuning НЕ варто:
 
@@ -519,13 +524,13 @@ Fine-tuning (наприклад Unsloth + QLoRA на GPU) змінює ваги 
 • Задача часто змінюється → fine-tuned вага «застаріває»
 • Немає GPU / часу на eval → почніть з prompt + regression tests
 
-Корисні посилання (без запуску в POC): Unsloth (https://github.com/unslothai/unsloth), Ollama ADAPTER (https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx), Collabnix fine-tune + Ollama guide (https://collabnix.com/how-to-fine-tune-llm-and-use-it-with-ollama-a-complete-guide-for-2025/).
+Корисні посилання (я їх не запускав у pet-проєкті): Unsloth (https://github.com/unslothai/unsloth), Ollama ADAPTER (https://github.com/ollama/ollama/blob/main/docs/modelfile.mdx), Collabnix fine-tune + Ollama guide (https://collabnix.com/how-to-fine-tune-llm-and-use-it-with-ollama-a-complete-guide-for-2025/).
 
 Практичний висновок
 
 ```mermaid
 flowchart TD
-  A[Потрібно змінити поведінку моделі?] --> B{Є ваші документи / FAQ?}
+  A[Потрібно змінити поведінку моделі?] --> B{Є мої документи / FAQ?}
   B -->|Так| C[RAG + system prompt]
   B -->|Ні| D{Достатньо інструкції в prompt?}
   D -->|Так| E[System prompt або Modelfile]
@@ -545,36 +550,24 @@ flowchart TD
 
 Практичний приклад: git push + Pull Request (Modelfile)
 
-Ми перевірили на реальному знанні, якого базова `llama3.2` не має: точний workflow для Boobuh/llama-node-poc (https://github.com/Boobuh/llama-node-poc) (гілка → commit → push → `gh pr create`).
+Я хотів перевірити, чи можна «навчити» модель конкретному workflow, якого вона не знає — push + PR для мого pet-проєкту.
 
-Повна інструкція з логами та скріншотами: `docs/teaching-git-mr/README.md` (docs/teaching-git-mr/README.md)  
-Pull Request з цим експериментом: https://github.com/Boobuh/llama-node-poc/pull/1
-
-| Етап | Що сталося | Скріншот |
-| ---- | ---------- | -------- |
+| Етап | Що я побачив | Скріншот |
+| ---- | ------------ | -------- |
 | Baseline | `llama3.2` порадила `git push origin main --force` | `docs/teaching-git-mr/screenshots/01-baseline-ollama.png` |
-| Навчання | `ollama create llama-node-poc-git -f docs/teaching-git-mr/Modelfile` | `02-create-modelfile.png` |
-| Після Modelfile | Feature branch + `gh pr create` | `03-taught-ollama.png` |
-| Live demo | Реальний push і PR #1 | `step-06-push-branch.png`, `10-github-pr-page.png` |
+| Modelfile | `ollama create llama-node-poc-git` | `02-create-modelfile.png` |
+| Після навчання | feature branch + `gh pr create` | `03-taught-ollama.png` |
+| Live demo | реальний push і PR | `step-06-push-branch.png` |
 
-Відтворення в терміналі:
+Логи кожного кроку я поклав у `docs/teaching-git-mr/terminal-logs/` — можна відтворити локально.
 
-```bash
-ollama create llama-node-poc-git -f docs/teaching-git-mr/Modelfile
-ollama run llama-node-poc-git "Як у Boobuh/llama-node-poc запушити коміт і створити PR?"
-chmod +x docs/teaching-git-mr/run-live-demo.sh
-./docs/teaching-git-mr/run-live-demo.sh
-```
+BACKEND CAPABILITY TESTING — МІЙ REGRESSION SUITE
 
-Логи кожного кроку: `docs/teaching-git-mr/terminal-logs/` (baseline, taught, live `step-*.txt`).
+Коли я збирав pet-проєкт, мені було мало «відповідь прийшла» — я хотів ловити регресію після зміни моделі чи prompt.
 
-BACKEND CAPABILITY TESTING — ПРИКЛАД REGRESSION SUITE
+1. Instruction Following
 
-Одне з найважливіших — це не просто "працює чи ні", а регресійне тестування, яке можна запускати у CI/CD.
-
-1. Instruction Following (Compliance)
-
-Тест на точне виконання інструкцій:
+Перший тест, який я додав — чи модель слухається жорстких обмежень («лише YES або NO»):
 
 ```typescript
 import { Ollama } from "ollama";
@@ -596,11 +589,11 @@ const isExact =
   response.trim().toUpperCase() === "NO";
 ```
 
-Чому це важливо: Якщо модель почала ігнорувати інструкції → щось змінилося в конфігурації (temperature, stop tokens, weights).
+Що я з цього зрозумів: коли `llama3.2` раптом почала відповідати абзацами замість «YES/NO», винна була не Node-обгортка, а temperature або інша модель після `ollama pull`.
 
 2. Structured Output (JSON)
 
-Тест на коректну генерацію структурованих даних:
+Другий блок — JSON для pipeline, де парсер не пробачить зайвих слів:
 
 ```typescript
 const prompt = `Витягни ім'я та вік із тексту та поверни тільки валідний JSON:
@@ -622,11 +615,11 @@ assert(data.name?.toLowerCase().includes("anna"));
 assert(data.age === 29);
 ```
 
-Чому це важливо: Backend workflows часто залежать від валідного JSON. Якщо парсинг падає → ваш pipeline ламається.
+Чому це важливо для мене: backend workflows часто залежать від валідного JSON. Коли парсинг падає — ламається весь pipeline.
 
 3. Few-Shot Context Retention
 
-Тест на збереження контексту між повідомленнями:
+Тут я перевіряв, чи модель «пам’ятає» ключ у межах одного діалогу:
 
 ```typescript
 await client.chat({
@@ -650,11 +643,11 @@ const response = message.content;
 assert(response.includes("12345"));
 ```
 
-Чому це важливо: Якщо модель забуває контекст занадто швидко → проблема з context window або KV cache.
+На `tinyllama` цей тест у мене стабільно падав — і це нормально для малої моделі, не сигнал ламати Node-клієнт.
 
 4. Determinism (Low Temperature)
 
-Тест на повторюваність при низькій температурі:
+Для логічних задач я знімав temperature до 0 і порівнював два послідовні запити:
 
 ```typescript
 const prompt = "2+2=";
@@ -675,11 +668,11 @@ const response2 = await askOnce();
 assert(response1.trim() === response2.trim());
 ```
 
-Чому це важливо: Для логічних задач потрібна стабільність. Якщо відповіді різняться → параметри випадковості нестабільні.
+Результат: на `tinyllama` відповіді іноді різнились навіть при `temperature: 0` — я прийняв це як обмеження моделі, а не баг тестів.
 
 5. Latency & Throughput Metrics
 
-Тест на продуктивність:
+Окремо я міряв time-to-first-token — щоб відчути, чи не «завис» UI:
 
 ```typescript
 let firstTokenTime = 0;
@@ -713,11 +706,11 @@ console.log(`First token: ${firstTokenTime}ms`);
 console.log(`Throughput: ${tokensPerSecond.toFixed(2)} tokens/sec`);
 ```
 
-Чому це важливо: Зміни в hardware або threading settings впливають на продуктивність. Це критично для scaling decisions.
+Практично: коли warm latency стрибнула після оновлення Ollama, я одразу бачив це в логах тестів — без ручного `curl`.
 
 6. Context Window Boundary
 
-Тест на поведінку при великих промптах:
+І нарешті — довгий prompt з повторенням «Париж», щоб перевірити, чи модель не «забуває» початок:
 
 ```typescript
 const longText =
@@ -736,11 +729,11 @@ const response = (
 assert(response.toLowerCase().includes("paris"));
 ```
 
-Чому це важливо: Якщо модель починає ігнорувати ранній контекст → проблема з KV cache або context window.
+У моєму прогоні `llama3.2` тримала відповідь «Париж»; на `tinyllama` інколи губила контекст — знову ж таки, про модель, не про npm `ollama`.
 
 РЕЗУЛЬТАТИ ТЕСТУВАННЯ
 
-У llama-node-poc (https://github.com/Boobuh/llama-node-poc) зібрано 31 інтеграційний тест як приклад regression suite. Ви можете побудувати аналогічний набір у своєму проєкті, використовуючи `Ollama` client напряму:
+У pet-проєкті llama-node-poc я зібрав 31 інтеграційний тест. Нижче — фрагменти, які я копіював у свій проєкт напряму через `Ollama` client:
 
 | Категорія                    | Тестів | Статус            |
 | ---------------------------- | ------ | ----------------- |
@@ -761,7 +754,7 @@ assert(response.toLowerCase().includes("paris"));
 | Latency Metrics          | 3      | ✅ 100%           |
 | Context Window           | 2      | ✅ 100%           |
 
-Загальний результат залежить від моделі. У POC з Ollama (`tinyllama`) більшість connectivity/streaming тестів проходять; context retention і determinism часто падають на малих моделях — це очікувана поведінка, а не баг Node.js клієнта.
+Загальний результат залежить від моделі. У pet-проєкті з Ollama (`tinyllama`) більшість connectivity/streaming тестів проходять; context retention і determinism часто падають на малих моделях — це очікувана поведінка, а не баг Node.js клієнта.
 
 Реальні метрики продуктивності
 
@@ -805,7 +798,7 @@ Reply with ONLY "YES" or "NO". Is water wet?
 YES.
 ```
 
-Аналіз: З англійським промптом `YES`/`NO` модель дотримується формату. Український варіант (`Відповідай ТІЛЬКИ "ТАК" або "НІ"`) або вільне питання (`Чи вода мокра?`) часто дають довгу відповідь замість одного слова — тому regression tests і публікація використовують англійські інструкції для порівняння.
+Аналіз: з англійським промптом `YES`/`NO` модель дотримується формату. Український варіант («Відповідай ТІЛЬКИ "ТАК" або "НІ"») у мене часто розповзався в абзац — тому в regression tests я лишив англійські інструкції для порівняння між прогонами.
 
 ---
 
@@ -993,9 +986,9 @@ The sky appears blue because of a phenomenon called Rayleigh scattering, where s
 6. ⚠️ Підсумкування: Зміст ок, але зайвий вступ перед відповіддю
 7. ✅ Факти: Rayleigh scattering — адекватне пояснення
 
-Повний набір із 8 прикладів — у файлі `EXAMPLES_OUTPUT.txt` у llama-node-poc (https://github.com/Boobuh/llama-node-poc).
+Повний набір із 8 прикладів — у файлі `EXAMPLES_OUTPUT.txt` у pet-проєкті llama-node-poc.
 
-Ці приклади демонструють реальну поведінку llama3.2 через Ollama — корисно для backend POC і regression suite, а не як гарантія production-якості.
+Ці приклади показують реальну поведінку llama3.2 через Ollama — я використовував їх для regression suite, а не як гарантію production-якості.
 
 TYPESCRIPT ТА ES MODULES
 
@@ -1037,9 +1030,9 @@ try {
 }
 ```
 
-CLI ТА ТЕСТИ (ОПЦІЙНО: РЕПОЗИТОРІЙ-ПРИКЛАД)
+CLI ТА ТЕСТИ (ЯК Я ПРОГАНЯЮ PET-ПРОЄКТ)
 
-Якщо хочете побачити готовий CLI з Commander.js, provider abstraction і regression suite — повний шлях з нуля для llama-node-poc (https://github.com/Boobuh/llama-node-poc):
+Окремо від мінімального `index.ts` я зібрав CLI на Commander.js і regression suite. Ось команди, якими користуюся сам:
 
 ```bash
 
@@ -1057,16 +1050,16 @@ ollama pull llama3.2     # для npm run dev (default config)
 ollama list
 curl -s http://127.0.0.1:11434/api/tags | head
 
-4. КЛОН І ЗАЛЕЖНОСТІ
+4. КЛОН І ЗАЛЕЖНОСТІ (ОПЦІЙНО — ЯКЩО БЕРЕТЕ МІЙ PET-ПРОЄКТ)
 
-git clone https://github.com/Boobuh/llama-node-poc.git
+git clone <url з профілю автора>
 cd llama-node-poc
 npm install
 ```
 
 Тести (від найменшого до найбільшого)
 
-Команди лише в цьому POC (у власному проєкті достатньо `npx tsx index.ts`):
+Команди з мого pet-проєкту (у власному проєкті достатньо `npx tsx index.ts`):
 
 ```bash
 npm run test:unit          # без LLM — чисті unit-тести
@@ -1084,7 +1077,7 @@ npm test                   # 31 regression тестів, ~5–10 хв
 | `test:providers` | `PASS` для Ollama                                                | `model not found` → `ollama pull tinyllama`                         |
 | `npm test`       | summary з pass rate; частина тестів може `FAIL` на малих моделях | очікувано для `tinyllama` (instruction following, JSON)             |
 
-Тести для Ollama автоматично використовують `tinyllama` (див. `prepareTestProvider` у POC), навіть якщо `OLLAMAMODEL` не задано. Демо `npm run dev` бере `llama3.2` з config — потрібен відповідний `ollama pull` або `OLLAMAMODEL=tinyllama`.
+Тести для Ollama автоматично використовують `tinyllama` (див. `prepareTestProvider` у pet-проєкті), навіть якщо `OLLAMAMODEL` не задано. Демо `npm run dev` бере `llama3.2` з config — потрібен відповідний `ollama pull` або `OLLAMAMODEL=tinyllama`.
 
 Демо CLI
 
@@ -1095,9 +1088,9 @@ npm run dev -- chat --provider ollama
 npm run dev -- stream --provider ollama
 ```
 
-У власному проєкті достатньо `npx tsx index.ts` або `npm start` після кроків із розділу «Початок з нуля».
+У новому проєкті достатньо `npx tsx index.ts` або `npm start` після кроків із розділу «Початок з нуля».
 
-Environment (POC): `OLLAMAHOST`, `OLLAMAMODEL`, `PROVIDER`
+Environment (pet-проєкт): `OLLAMAHOST`, `OLLAMAMODEL`, `PROVIDER`
 
 КОНФІГУРАЦІЯ У ВАШОМУ ПРОЄКТІ
 
@@ -1115,7 +1108,7 @@ const generation = {
 };
 ```
 
-У llama-node-poc використовується розширений `appConfig` — це зручно для POC, але не обов’язково для першого запуску.
+У llama-node-poc я використовую розширений `appConfig` — це зручно для pet-проєкту, але не обов’язково для першого запуску.
 
 ДЕ ШУКАТИ МОДЕЛІ?
 
@@ -1148,17 +1141,17 @@ wget https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7
   -O ./models/llama-model.gguf
 ```
 
-ПРИКЛАД: ДЕПЛОЙ (LLAMA-NODE-POC)
+ПРИКЛАД: ДЕПЛОЙ (ЯК Я ПРОБУВАВ У PET-ПРОЄКТІ)
 
-> Нижче — не інструкція для продакшену, а фрагменти з дослідницького POC: як можна винести Ollama в окремий процес і викликати його з Node.js.
+> Нижче — не інструкція для продакшену, а фрагменти з мого pet-проєкту: як я виносив Ollama в окремий процес і викликав його з Node.js.
 
 Архітектура з Ollama
 
 Node.js застосунок викликає Ollama server (окремий процес або sidecar). Модель не завантажується в Node.js процес — це спрощує memory footprint і оновлення моделей.
 
-Docker у POC: `Dockerfile` будує лише Node.js застосунок. Ollama server не входить у контейнер — запускайте Ollama на хості або як sidecar і задайте `OLLAMA_HOST` (наприклад `http://host.docker.internal:11434` на macOS/Windows).
+Docker у pet-проєкті: `Dockerfile` будує лише Node.js застосунок. Ollama server не входить у контейнер — я запускав Ollama на хості або як sidecar і задавав `OLLAMA_HOST` (наприклад `http://host.docker.internal:11434` на macOS/Windows).
 
-У POC показано таку схему:
+Схема, яку я пробував:
 
 • Ollama на VM / Fargate / dedicated host
 • Node.js API (Express/Fastify) як thin client
@@ -1195,7 +1188,7 @@ Ollama server — окремий контейнер або managed service.
 
 Docker Compose (Node.js + Ollama sidecar)
 
-У репозиторії є `docker-compose.yml` — два сервіси: ollama і app (Node.js POC).
+У репозиторії є `docker-compose.yml` — два сервіси: ollama і app (Node.js pet-проєкт).
 
 ```bash
 
@@ -1270,7 +1263,7 @@ try {
 
 2. Абстракція провайдера (опційно)
 
-Якщо потрібно перемикати Ollama і llama-node — винесіть інтерфейс у свій код (не обов’язково клонувати POC):
+Якщо потрібно перемикати Ollama і llama-node — винесіть інтерфейс у свій код (не обов’язково клонувати pet-проєкт):
 
 ```typescript
 type LlmSession = {
@@ -1356,7 +1349,7 @@ const data = JSON.parse(message.content) as { name: string; age: number };
 console.log(data);
 ```
 
-Порівняно з prompt-only JSON (як у regression suite POC): `format: "json"` на `llama3.2` стабільніше; `tinyllama` все одно може ламати схему — тестуйте на цільовій моделі.
+Порівняно з prompt-only JSON (як у моєму regression suite): `format: "json"` на `llama3.2` стабільніше; `tinyllama` все одно ламав схему — перевіряйте на цільовій моделі.
 
 Перевірка + парсинг:
 
@@ -1391,7 +1384,7 @@ const { message } = await client.chat({
 });
 ```
 
-У POC regression suite є тести context retention — на `tinyllama` часто FAIL; на `llama3.2` — краще.
+У моєму regression suite є тести context retention — на `tinyllama` часто FAIL; на `llama3.2` — краще.
 
 3. Docker Compose — локальний «production-like» stack
 
@@ -1414,64 +1407,39 @@ npm run benchmark:models
 | `llama3.2` | ~17 s | ~6.5 s | краща якість; warm latency нижча на тестовому CPU |
 | `llama3.2` + `format: "json"` | — | ~21 s | валідний JSON у тестовому run |
 
-Висновок для статті: `tinyllama` — для швидких connectivity-тестів у CI; `llama3.2` — для демо якості та structured output. Цифри залежать від CPU/GPU — завжди публікуйте `benchmarks-latest.txt` з вашого заліза.
+Висновок з моїх замірів: `tinyllama` я лишаю для connectivity у CI; для демо якості та JSON беру `llama3.2`. Цифри залежать від CPU/GPU — у репозиторії лежить мій `benchmarks-latest.txt`, щоб можна було порівняти на своєму залізі.
 
 5. Fine-tuning — короткий pointer
 
-Fine-tuning має сенс після Modelfile + RAG + regression tests. Якщо pass rate не росте — див. розділ «Fine-tuning / LoRA» і блок «Коли fine-tuning НЕ варто» вище. У цьому POC ми не запускаємо QLoRA — достатньо Modelfile-експерименту (git/PR teaching (docs/teaching-git-mr/README.md)).
+Fine-tuning має сенс після Modelfile + RAG + regression tests. Якщо pass rate не росте — див. розділ «Fine-tuning / LoRA» і блок «Коли fine-tuning НЕ варто» вище. У цьому pet-проєкті я не запускав QLoRA — мені вистачило Modelfile-експерименту з git/PR (деталі в `docs/teaching-git-mr/`).
 
-ЩО ЦЕ ДОЗВОЛЯЄ ЗРОБИТИ?
+ЩО Я З ЦЬОГО ВИНІС
 
-✅ Llama на Node.js без C++ біндингів у застосунку (Ollama path)
+Після кількох тижнів експериментів я для себе зафіксував простий шлях: Ollama server + npm `ollama` + тонкий TypeScript-клієнт. In-process `llama-node` лишився цікавим, але для нових задач у 2026 році я б туди не повертався.
 
-• Чистий TypeScript клієнт до Ollama server
-• Немає витрат на хмарні LLM API
-• Локальний inference через Ollama
+Regression suite на `client.chat()` мені реально допоміг — один раз після `ollama pull` pass rate впав, і я одразу побачив, що проблема в моделі, а не в коді. Modelfile-експеримент з git/PR показав, що «навчити» workflow можна без fine-tune, якщо сформулювати політику в SYSTEM-блоці.
 
-✅ Регресійне тестування для CI/CD
-
-• Набір тестів на `client.chat()` (у POC — 31 сценарій)
-• Автоматичне виявлення деградації
-• Метрики продуктивності
-
-✅ Структурований приклад архітектури
-
-• TypeScript з повною типізацією
-• ES Modules для сучасного JavaScript
-• Error handling навколо HTTP-клієнта Ollama
-• Опційний CLI у репозиторії-прикладі
-
-✅ Повний контроль
-
-• Налаштування temperature, topP, topK
-• Контроль над токенізацією
-• Управління пам'яттю
-• Streaming responses
+Окремо вартують RAG і `format: "json"` — перше для документів, друге для стабільного JSON без regex по відповіді моделі.
 
 ВИСНОВОК
 
-Створення LLM backend на Node.js з Ollama + npm `ollama` — практичний шлях почати з нуля:
+Я б радив почати так: Ollama server → npm `ollama` → один `index.ts`. Node.js лишається тонким клієнтом, а inference — на стороні Ollama.
 
-• Встановити Ollama → `npm install ollama` → написати `index.ts`
-• Node.js залишається тонким клієнтом; inference — на стороні Ollama
-• Regression-тести можна будувати напряму на `client.chat()`
+Що я для себе зафіксував:
 
-Репозиторій llama-node-poc (https://github.com/Boobuh/llama-node-poc) демонструє розширений варіант:
+• `ollama run` — найшвидша перевірка, перш ніж писати TypeScript.
+• `tinyllama` — для connectivity-тестів; `llama3.2` — для якості та JSON.
+• Modelfile + RAG закривають 90% «навчити модель», fine-tuning — лише якщо prompt не тягне.
+• Regression suite на `client.chat()` реально ловить деградацію після зміни моделі.
 
-• ✅ TypeScript та сучасними практиками
-• ✅ Comprehensive test suite (31 тест)
-• ✅ Двома шляхами інтеграції (Ollama / llama-node)
-• ✅ Готовністю до CI/CD у репозиторії-прикладі
+Якщо підете цим шляхом — напишіть у коментарях, на якому кроці застрягли. Мені цікаво, чи у вас `llama3.2` на CPU дає схожі latency, як у моєму `benchmarks-latest.txt`.
 
-РЕПОЗИТОРІЙ-ПРИКЛАД
+КОД І ДОДАТКОВІ МАТЕРІАЛИ
 
-Повний POC (CLI, provider abstraction, 31 тест) — опційно, для вивчення патернів:
-https://github.com/Boobuh/llama-node-poc
-
-Для першого запуску достатньо розділу «Початок з нуля» вище.
+Якщо після статті захочете подивитися CLI, 31 тест і скріншоти експериментів — код лежить у pet-проєкті llama-node-poc (посилання в профілі автора на DOU/GitHub). Для першого запуску достатньо розділу «Початок з нуля» вище.
 
 ---
 
-Стаття описує, як запустити Llama з Node.js з нуля через `ollama@0.6.3`; репозиторій llama-node-poc — додатковий приклад архітектури та тестів.
+Стаття — особистий досвід запуску Llama з Node.js через `ollama@0.6.3`; код у репозиторії не дублює цей текст.
 
-Останнє оновлення: червень 2026. Google Doc ID: `18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw`.
+Останнє оновлення: серпень 2026. Версія для DOU.

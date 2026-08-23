@@ -1,6 +1,6 @@
 # Google Doc sync instructions
 
-Publication source of truth: `UKRAINIAN_PUBLICATION.md`  
+Publication source of truth: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (public stub: `UKRAINIAN_PUBLICATION.md`)  
 Plain-text for Google Docs: `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`
 
 **Google Doc:** https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit
@@ -92,7 +92,7 @@ See `scripts/google-drive-mcp-env.example` and `scripts/setup-google-drive-mcp.s
 
 ## Sync to Google Doc (formatted — recommended)
 
-Uses `UKRAINIAN_PUBLICATION.md` directly. Preserves headings, code blocks (monospace + gray background + syntax colors per language), tables, and lists.
+Uses `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` directly. Preserves headings, code blocks (monospace + gray background + syntax colors per language), tables, and lists.
 
 Code fence languages map to Google Docs code block types: `typescript` → TypeScript, `bash` → Shell, `json` → JSON, `javascript` → JavaScript, `dockerfile` → Shell, etc. Unlabeled fences are inferred when possible.
 
