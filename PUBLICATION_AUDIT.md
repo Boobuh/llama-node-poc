@@ -6,7 +6,7 @@
 | ------------ | ------------------------------------------------------------------------------------ |
 | URL          | https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit |
 | File ID      | `18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw`                                       |
-| Local source | `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (stub: `UKRAINIAN_PUBLICATION.md`) |
+| Local source | `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (gitignored, local machine) |
 | Paste copy   | `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`                                               |
 | Regenerate   | `npx tsx src/tests/md-to-googledocs.ts`                                              |
 
@@ -43,7 +43,7 @@ Remote Drive MCP in Cursor may still fail with dynamic client registration — s
 | npm scripts                         | ✅ benchmark, sync:doc, rag:demo, teaching:screenshots, googledocs-txt |
 | DOU author intro + first person      | ✅ «Про автора», «Я перевірив», особистий висновок              |
 | Reduced repo self-promotion           | ✅ один блок «Код і додаткові матеріали»; без inline GitHub URL   |
-| Uniqueness note                       | ✅ stub on GitHub; draft in `docs/dou/`; Google Doc owner+editor only |
+| Uniqueness note                       | ✅ article gitignored; never push draft/stub to GitHub              |
 | AI tone mitigation                    | ⚠️ автор має вручну пройтися перед submit (DOU правило)          |
 
 ---
@@ -59,7 +59,7 @@ Remote Drive MCP in Cursor may still fail with dynamic client registration — s
 | Not AI-generated prose | ⚠️ | Author must manual pass before submit (DOU policy) |
 | No hidden promotion | ✅ | Single «Код і додаткові матеріали» block; no inline Boobuh URLs |
 
-**Before DOU submit:** Google Doc restricted to owner + editor (domain sharing removed Aug 2026). After DOU publish, add DOU URL to `UKRAINIAN_PUBLICATION.md` stub.
+**Before DOU submit:** Google Doc restricted to owner + editor. **Do not push** `docs/dou/` or generated paste files. After DOU publish, add DOU URL to README only.
 
 ---
 

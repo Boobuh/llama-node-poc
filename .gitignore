@@ -48,6 +48,11 @@ coverage/
 tmp/
 temp/
 
+# DOU publication (local only — not for GitHub; uniqueness for DOU moderation)
+UKRAINIAN_PUBLICATION.md
+UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt
+docs/dou/
+
 # AL Development files (legacy from template)
 .alcache/
 .alpackages/

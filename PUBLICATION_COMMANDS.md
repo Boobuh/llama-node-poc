@@ -1,6 +1,6 @@
 # Команди для української публікації
 
-Джерело правди: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (stub: `UKRAINIAN_PUBLICATION.md`)  
+Джерело правди: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (**local**, `.gitignore`)  
 Google Doc: https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit
 
 ## 1. Ollama (перед тестами / прикладами)
@@ -53,9 +53,8 @@ npm run build
 ## 5. Закомітити в GitHub (щоб файл не був 404)
 
 ```bash
-git add UKRAINIAN_PUBLICATION.md \
-        docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md \
-        UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt \
+# Publication files are gitignored — do not git add them for GitHub
+# git add PUBLICATION_AUDIT.md GOOGLE_DOC_SYNC.md  # tooling docs only
         README.md SETUP.md \
         GOOGLE_DOC_SYNC.md PUBLICATION_AUDIT.md PUBLICATION_COMMANDS.md \
         scripts/ src/providers/setup-messages.ts Dockerfile
@@ -87,9 +86,8 @@ node scripts/sync-google-doc-rich.mjs
 
 | Файл                                      | Призначення                              |
 | ----------------------------------------- | ---------------------------------------- |
-| `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` | Повний драфт (DOU, source of truth)     |
-| `UKRAINIAN_PUBLICATION.md`                | Stub — посилання на DOU / draft           |
-| `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`    | Plain-text для ручного paste             |
+| `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` | Повний драфт (local only, gitignored)   |
+| `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`    | Plain-text paste (local, gitignored)      |
 | `EXAMPLES_OUTPUT.txt`                     | Згенеровані приклади промптів/відповідей |
 | `EXAMPLES_FOR_ARTICLE.md`                 | Чернетка прикладів                       |
 | `scripts/sync-google-doc-rich.mjs`        | Sync MD → Google Doc                     |

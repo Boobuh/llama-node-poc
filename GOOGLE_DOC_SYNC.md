@@ -1,6 +1,6 @@
 # Google Doc sync instructions
 
-Publication source of truth: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (public stub: `UKRAINIAN_PUBLICATION.md`)  
+Publication source of truth: `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` (**local only**, gitignored)  
 Plain-text for Google Docs: `UKRAINIAN_PUBLICATION_GOOGLEDOCS.txt`
 
 **Google Doc:** https://docs.google.com/document/d/18iTtik-PL9VR0ydbOgMbz1xzOq5HCVBDYzlNZf6iKKw/edit

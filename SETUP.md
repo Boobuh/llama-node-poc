@@ -1,9 +1,8 @@
 # Llama Node.js POC — Setup Guide
 
-DOU article stub: [`UKRAINIAN_PUBLICATION.md`](UKRAINIAN_PUBLICATION.md)  
-Author draft (not for republish): [`docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md`](docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md)
+DOU article: **local draft only** (not committed — see `.gitignore`). Google Doc + `docs/dou/UKRAINIAN_PUBLICATION_DRAFT.md` on your machine.
 
-> Канонічна версія — на DOU після модерації. Google Doc — лише owner/editor.
+> Канонічна версія — на DOU після модерації. Не пушити текст статті на GitHub.
 
 ## What's in this repo
 
@@ -11,8 +10,7 @@ TypeScript proof of concept for running **Llama from Node.js** via **Ollama** (r
 
 ```
 llama-node-poc/
-├── UKRAINIAN_PUBLICATION.md      # DOU stub (canonical text → DOU after publish)
-├── docs/dou/                     # Author draft for moderation (not for republish)
+├── docs/dou/                     # Local DOU draft (gitignored)
 ├── src/
 │   ├── index.ts                  # CLI entry point
 │   ├── config.ts                 # Model and generation settings
